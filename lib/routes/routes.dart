@@ -1,0 +1,96 @@
+import 'package:get/get.dart';
+
+import '../bindings/cart_binding.dart';
+import '../bindings/category_binding.dart';
+import '../bindings/change_password_binding.dart';
+import '../bindings/check_out_binding.dart';
+import '../bindings/details_binding.dart';
+import '../bindings/forgot_password_otp_verification_binding.dart';
+import '../bindings/forgot_pin_binding.dart';
+import '../bindings/login_binding.dart';
+import '../bindings/navigation_binding.dart';
+import '../bindings/onboard_binding.dart';
+import '../bindings/order_details_binding.dart';
+import '../bindings/orders_binding.dart';
+import '../bindings/payment_binding.dart';
+import '../bindings/payment_history_binding.dart';
+import '../bindings/phone_login_otp_binding.dart';
+import '../bindings/popular_product_list_binding.dart';
+import '../bindings/product_list_binding.dart';
+import '../bindings/profile_binding.dart';
+import '../bindings/registration_binding.dart';
+import '../bindings/registration_email_verification_binding.dart';
+import '../bindings/reset_password_binding.dart';
+import '../bindings/search_field_binding.dart';
+import '../bindings/settings_binding.dart';
+import '../bindings/special_product_list_binding.dart';
+import '../bindings/splash_binding.dart';
+import '../bindings/update_profile_binding.dart';
+import '../views/cart/screen/cart_screen.dart';
+import '../views/auth section/change_password/screen/change_password_screen.dart';
+import '../views/category/screen/category_screen.dart';
+import '../views/check_out/screen/check_out_screen.dart';
+import '../views/auth section/forgot_password_otp_verification/screen/forgot_password_otp_verification_screen.dart';
+import '../views/auth section/forgot_pin/screen/forgot_pin_screen.dart';
+import '../views/auth section/login/screen/login_screen.dart';
+import '../views/dashboard/screen/dashboard_screen.dart';
+import '../views/popular_product_list/screen/popular_product_list_screen.dart';
+import '../views/product_details/screen/details_screen.dart';
+import '../views/navigation/screen/navigation_screen.dart';
+import '../views/onboard/screen/onboard_screen.dart';
+import '../views/order_details/screen/order_details_screen.dart';
+import '../views/orders/screen/orders_screen.dart';
+import '../views/payment/screen/payment_screen.dart';
+import '../views/payment_history/screen/payment_history_screen.dart';
+import '../views/auth section/phone_login_otp/screen/phone_login_otp_screen.dart';
+import '../views/product_list/screen/product_list_screen.dart';
+import '../views/profile/screen/profile_screen.dart';
+import '../views/auth section/registration/screen/registration_screen.dart';
+import '../views/auth section/reg_email_verification/screen/reg_email_verification_screen.dart';
+import '../views/auth section/reset_password/screen/reset_password_screen.dart';
+import '../views/search_field/screen/search_field_screen.dart';
+import '../views/settings/screen/settings_screen.dart';
+import '../views/special_product_list/screen/special_product_list_screen.dart';
+import '../views/splash/screen/splash_screen.dart';
+import '../views/update_profile/screen/update_profile_screen.dart';
+
+part '../routes/route_pages.dart';
+
+class Routes {
+  // Page List
+  static var list = RoutePageList.list;
+
+  // Route Names
+  static const String splashScreen = '/splashScreen';
+  static const String onboardScreen = '/onboardScreen';
+  static const String loginScreen = '/loginScreen';
+  static const String forgotPasswordScreen = '/forgotPasswordScreen';
+  static const String kycInformationScreen = '/kycInformationScreen';
+  static const String navigation = '/navigation';
+  static const String notificationScreen = '/notificationScreen';
+  static const String detailsScreen = '/detailsScreen';
+  static const String addMoneyScreen = '/addMoneyScreen';
+  static const String transferMoneyScreen = '/transferMoneyScreen';
+  static const String checkOutScreen = '/checkOutScreen';
+  static const String cartScreen = '/cartScreen';
+  static const String profileScreen = '/profileScreen';
+  static const String update_profileScreen = '/update_profileScreen';
+  static const String forgotPinScreen = '/forgot_pinScreen';
+  static const String forgotPasswordOtpVerificationScreen = '/forgot_password_otp_verificationScreen';
+  static const String resetPasswordScreen = '/reset_passwordScreen';
+  static const String registrationScreen = '/registrationScreen';
+  static const String registrationEmailVerificationScreen = '/registration_email_verificationScreen';
+  static const String searchFieldScreen = '/search_fieldScreen';
+  static const String paymentScreen = '/paymentScreen';
+  static const String paymentHistoryScreen = '/payment_historyScreen';
+  static const String ordersScreen = '/ordersScreen';
+  static const String orderDetailsScreen = '/order_detailsScreen';
+  static const String settingsScreen = '/settingsScreen';
+  static const String changePasswordScreen = '/change_passwordScreen';
+  static const String phoneLoginOtpScreen = '/phone_login_otpScreen';
+  static const String categoryScreen = '/categoryScreen';
+  static const String productListScreen = '/product_listScreen';
+  static const String dashboardScreen = '/DashboardScreen';
+  static const String popularProductListScreen = '/popular_product_listScreen';
+  static const String specialProductListScreen = '/special_product_listScreen';
+}

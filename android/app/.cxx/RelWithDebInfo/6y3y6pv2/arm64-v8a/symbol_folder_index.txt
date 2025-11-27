@@ -1,0 +1,1 @@
+D:\Dart\knighthorse-App\build\app\intermediates\cxx\RelWithDebInfo\6y3y6pv2\obj\arm64-v8a

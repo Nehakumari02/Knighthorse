@@ -1,0 +1,207 @@
+
+  Future<dynamic> checkoutProcess() async {
+    List<String> fieldList = [];
+    Map<String, dynamic> inputBody = {
+      "cart_id": cartId.value.toString(),
+      "address": addressController.text,
+      "phone": phoneController.text,
+      "notes": orderNoteController.text,
+      "email": emailController.text,
+      if (paymentMethod.value == "online")
+        "currency": selectedGateway.value!.alias,
+      "payment_method": paymentMethod.value,
+      "delivery_charge": deliveryCharge.value,
+      "amount": total.value.toString(),
+      "total_cost": total.value.toString(),
+      "reusable_bag": reusableBagPrice.value.toString(),
+      "delivery_type": selectedDelivaryTypeName.value,
+    };
+
+    if (selectedDelivaryType.value == 1) {
+      final date = selectedDates.isNotEmpty ? selectedDates[0].value : "";
+      final time = selectedTimes.isNotEmpty ? selectedTimes[0].value : "";
+      final parts = time.split("-");
+
+      inputBody["together_time_slot_start"] = parts.isNotEmpty ? parts[0] : "";
+      inputBody["together_time_slot_end"] = parts.length > 1 ? parts[1] : "";
+      inputBody["together_delivery_date"] = date;
+    } else {
+      for (int i = 0; i < shipmentType.length; i++) {
+        final shipmentId = shipmentType[i].id;
+        final date = selectedDates.length > i ? selectedDates[i].value : "";
+        final time = selectedTimes.length > i ? selectedTimes[i].value : "";
+        final parts = time.split("-");
+
+        inputBody["time_slots[$shipmentId][start]"] =
+            parts.isNotEmpty ? parts[0] : "";
+        inputBody["time_slots[$shipmentId][end]"] =
+            parts.length > 1 ? parts[1] : "";
+        inputBody["delivery_date[$shipmentId]"] = date;
+      }
+      fieldList
+          .addAll(inputBody.entries.map((e) => "${e.key}=${e.value}").toList());
+    }
+
+    if (paymentMethod.value == "cash") {
+      return RequestProcess().request(
+        fromJson: CommonSuccessModel.fromJson,
+        apiEndpoint: ApiEndpoint.checkOutByCash,
+        method: HttpMethod.POST,
+        body: inputBody,
+        isLoading: _isCheckingOut,
+        onSuccess: (value) {
+          _checkOutModel = value!;
+          debugPrint("Complete cash${_checkOutModel}");
+        },
+      );
+    } else {
+      return RequestProcess().request(
+        fromJson: OnlinePaymentModel.fromJson,
+        apiEndpoint: ApiEndpoint.checkOutByOnline,
+        method: HttpMethod.POST,
+        body: inputBody,
+        fieldList: fieldList,
+        isLoading: _isCheckingOut,
+        onSuccess: (value) {
+          debugPrint("Complete online");
+          _onlinePaymentModel = value!;
+          debugPrint("Complete ${_onlinePaymentModel}");
+          Get.to(WebPaymentScreen());
+        },
+      );
+    }
+  }
+
+
+
+
+
+
+
+  
+  Future<dynamic> checkoutProcess() async {
+    Map<String, dynamic> inputBody = {
+      'cart_id': '7',
+      'address': 'Rem libero odit cupi',
+      'phone': '04696946',
+      'notes': 'sample notes',
+      'currency': 'payment-method-paystack-ngn-automatic',
+      'reusable_bag': '2',
+      'payment_method': 'online',
+      'amount': '100',
+      'email': 'user@gmail.com',
+      'total_cost': '100',
+      'delivery_type': 'separate',
+      'delivery_charge': '50',
+    };
+
+    for (int i = 0; i < shipmentType.length; i++) {
+      final id = shipmentType[i].id.toString();
+      final timeSlot = selectedTimes[i].value;
+      final date = selectedDates[i].value;
+
+      if (timeSlot.contains('-')) {
+        final parts = timeSlot.split('-');
+        inputBody['time_slots[$id][start]'] = parts[0].trim();
+        inputBody['time_slots[$id][end]'] = parts[1].trim();
+      }
+
+      inputBody['delivery_date[$id]'] = date;
+    }
+
+    if (paymentMethod.value == "cash") {
+      return RequestProcess().request(
+        fromJson: CommonSuccessModel.fromJson,
+        apiEndpoint: ApiEndpoint.checkOutByCash,
+        method: HttpMethod.POST,
+        pathList: [],
+        fieldList: [],
+        body: inputBody,
+        isLoading: _isCheckingOut,
+        onSuccess: (value) {
+          _checkOutModel = value!;
+          debugPrint("Complete cash${_checkOutModel}");
+        },
+      );
+    } else {
+      return RequestProcess().request(
+        fromJson: OnlinePaymentModel.fromJson,
+        apiEndpoint: ApiEndpoint.checkOutByOnline,
+        method: HttpMethod.POST,
+        body: inputBody,
+        pathList: [],
+        fieldList: [],
+        isLoading: _isCheckingOut,
+        onSuccess: (value) {
+          debugPrint("Complete online");
+          _onlinePaymentModel = value!;
+          debugPrint("Complete ${_onlinePaymentModel}");
+          Get.to(WebPaymentScreen());
+        },
+      );
+    }
+  }
+
+
+
+
+
+  Future<void> submitOrder() async {
+    const String url =
+        'https://mishkatul.appdevs.team/knighthorse/api/v1/user/automatic/submit';
+
+    final headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ${LocalStorage.token}',
+    };
+
+    final request = http.MultipartRequest('POST', Uri.parse(url));
+
+    request.fields.addAll({
+      'cart_id': '7',
+      'address': 'Rem libero odit cupi',
+      'phone': '04696946',
+      'notes': 'sample notes',
+      'currency': 'payment-method-paystack-ngn-automatic',
+      'reusable_bag': '2',
+      'payment_method': 'online',
+      'amount': '100',
+      'email': 'user@gmail.com',
+      'total_cost': '100',
+      'delivery_type': 'separate',
+      'delivery_charge': '50',
+    });
+
+    // 🧠 Loop using shipmentType
+    for (int i = 0; i < shipmentType.length; i++) {
+      final id = shipmentType[i].id.toString(); // ID used as the index key
+      final timeSlot = selectedTimes[i].value;
+      final date = selectedDates[i].value;
+
+      if (timeSlot.contains('-')) {
+        final parts = timeSlot.split('-');
+        request.fields['time_slots[$id][start]'] = parts[0].trim();
+        request.fields['time_slots[$id][end]'] = parts[1].trim();
+      }
+
+      request.fields['delivery_date[$id]'] = date;
+    }
+
+    request.headers.addAll(headers);
+
+    try {
+      final response = await request.send();
+
+      if (response.statusCode == 200) {
+        final body = await response.stream.bytesToString();
+        print('✅ Order Submitted: $body');
+      } else {
+        final error = await response.stream.bytesToString();
+        print('❌ Error ${response.statusCode}: ${response.reasonPhrase}');
+        print('🔍 Details: $error');
+      }
+    } catch (e) {
+      print('🚨 Exception: $e');
+    }
+  }

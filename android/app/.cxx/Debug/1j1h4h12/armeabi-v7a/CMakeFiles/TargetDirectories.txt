@@ -1,0 +1,2 @@
+/Users/neha/Downloads/main-files/admart-app/admart-app-v1.0.0/android/app/.cxx/Debug/1j1h4h12/armeabi-v7a/CMakeFiles/edit_cache.dir
+/Users/neha/Downloads/main-files/admart-app/admart-app-v1.0.0/android/app/.cxx/Debug/1j1h4h12/armeabi-v7a/CMakeFiles/rebuild_cache.dir

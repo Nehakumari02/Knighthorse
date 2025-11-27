@@ -1,0 +1,2 @@
+/Users/appdevs/CC-ITEMS/knighthorse-App/android/app/.cxx/RelWithDebInfo/1d1f3d16/x86_64/CMakeFiles/edit_cache.dir
+/Users/appdevs/CC-ITEMS/knighthorse-App/android/app/.cxx/RelWithDebInfo/1d1f3d16/x86_64/CMakeFiles/rebuild_cache.dir
