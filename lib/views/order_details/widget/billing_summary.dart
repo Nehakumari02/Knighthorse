@@ -35,11 +35,11 @@ class BillingSummary extends GetView<OrderDetailsController> {
               value:
                   "${controller.deliveryCharge.value}${controller.currencySymbol.value}",
             ),
-            DoubleSideTextWidget(
-              keys: Strings.reusableBag,
-              value:
-                  "${controller.reusableBag.value}${controller.currencySymbol.value}",
-            ),
+            // DoubleSideTextWidget(
+            //   keys: Strings.reusableBag,
+            //   value:
+            //       "${controller.reusableBag.value}${controller.currencySymbol.value}",
+            // ),
             DoubleSideTextWidget(
               keys: Strings.paymentGatewayCharge,
               value:

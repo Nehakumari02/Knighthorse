@@ -17,6 +17,8 @@ import '../../cart/model/cart_model.dart';
 import '../controller/dashboard_controller.dart';
 import '../model/popular_product_model.dart';
 import '../widget/category_section.dart';
+import '../widget/featured_categories_section.dart'; // 👈 ADD THIS LINE
+
 
 import '../widget/top_bar_widget.dart';
 
@@ -27,7 +29,10 @@ part '../widget/product_card.dart';
 part '../widget/popular_grid.dart';
 part '../widget/banner_widget.dart';
 part '../widget/search_button.dart';
+part '../widget/all_products_grid.dart';
+
 part '../widget/special_offer_product.dart';
+
 
 
 class DashboardScreen extends GetView<DashboardController> {

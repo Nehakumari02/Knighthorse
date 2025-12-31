@@ -94,7 +94,7 @@ class ProductDetails extends GetView<OrderDetailsController> {
                           mainAxisAlignment: mainSpaceBet,
                           children: [
                             TextWidget(
-                              "\$$price",
+                              "\Rs$price",
                               fontWeight: FontWeight.w600,
                             ),
                           ],

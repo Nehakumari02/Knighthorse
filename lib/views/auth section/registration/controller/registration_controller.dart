@@ -1,69 +1,71 @@
-import 'dart:async'; // <--- REQUIRED for Timer
+import 'dart:async';
+import 'dart:math'; // <--- REQUIRED for Random OTP generation
 import 'package:knighthorse/base/utils/basic_import.dart';
 import 'package:knighthorse/base/utils/local_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:sendotp_flutter_sdk/sendotp_flutter_sdk.dart';
-
-
+import 'package:twilio_flutter/twilio_flutter.dart'; // <--- REQUIRED for Twilio
 
 import '../../../../base/api/services/auth_services.dart';
 import '../../../../base/api/services/basic_services.dart';
 import '../../../../routes/routes.dart';
-import 'package:url_launcher/url_launcher.dart'; // <-- for WhatsApp redirection
-
+import 'package:mailer/mailer.dart';
+import 'package:mailer/smtp_server.dart';
 
 class RegistrationController extends GetxController {
 
   final firstNameController = TextEditingController();
   final lastNameController = TextEditingController();
   final emailAddressController = TextEditingController();
-
   final passwordController = TextEditingController();
-
   final gstNoController = TextEditingController();
-  // Inside RegistrationController
   final countryController = TextEditingController();
   final mobileNumberController = TextEditingController();
-  // Inside RegistrationController
   final otpController = TextEditingController();
-  // MSG91 Configuration
-  final String widgetId = '356b7a694930393632393837';
-  final String token = '475234T9sqbLGt6926d193P1';
 
+  // --- TWILIO CONFIGURATION ---
+  // ⚠️ SECURITY WARNING: Storing keys on the client side is not recommended for production apps.
+  // Ideally, call a backend server to handle Twilio requests.
+  late TwilioFlutter twilioFlutter;
+  final String accountSid = 'ACc9fc4109ddb2fb6fed3526f368de9659';
+  final String authToken = '74ad5b4ea266f02c9913475ef697c6e1';
+  final String twilioNumber = '+17752589987'; // Your purchased Twilio phone number
 
   // State Variables
   var isOtpLoading = false.obs;
   var isOtpSent = false.obs;
-  RxBool isOtpVerified = false.obs; // <--- ADD THIS
-  var timerCount = 0.obs; // Observable for UI
-  Timer? _timer;          // The actual Timer object (Causes error if missing)
-  String? currentReqId;   // To store MSG91 Request ID
+  RxBool isOtpVerified = false.obs;
+  var timerCount = 0.obs;
+  Timer? _timer;
 
-  // void sendOtp() {
-  //   // Add your API logic here
-  //   print("OTP Sent to ${mobileNumberController.text}");
-  // }
-  RxString userType = 'retailer'.obs; // <-- ADD THIS LINE
-  RxString verificationStatus = 'pending'.obs; // 'pending', 'approved', 'denied'
+  // Store the generated OTP locally to verify later
+  String? _generatedOtp;
 
+  RxString userType = 'retailer'.obs;
+  RxString verificationStatus = 'pending'.obs;
 
   final pinController = TextEditingController();
-
   final referralIdController = TextEditingController();
   RxBool agree = false.obs;
   var selectedMethodIndex = 0.obs;
   RxString countrySelectMethod = ''.obs;
+  RxBool isFormValid = false.obs;
 
   // Routing
   get onRegistration => registrationProcess();
   get onLogIn => Routes.loginScreen.toNamed;
   get onPrivacyPolicy => '';
-  RxBool isFormValid = false.obs;
 
   @override
   void onInit() {
+    // Initialize Twilio
+    twilioFlutter = TwilioFlutter(
+      accountSid: accountSid,
+      authToken: authToken,
+      twilioNumber: twilioNumber,
+    );
+
     emailAddressController.addListener(_updateFormValidity);
     passwordController.addListener(_updateFormValidity);
     firstNameController.addListener(_updateFormValidity);
@@ -73,19 +75,18 @@ class RegistrationController extends GetxController {
     mobileNumberController.addListener(_updateFormValidity);
 
     BasicServices.getBasicSettingsInfo();
-    // ADD THIS LISTENER:
+
     mobileNumberController.addListener(() {
       if (isOtpVerified.value) {
-        isOtpVerified.value = false; // Reset verification if user changes number
+        isOtpVerified.value = false; // Reset verification if number changes
+        isOtpSent.value = false;     // Hide OTP field
         debugPrint("Number changed, verification reset.");
       }
       _updateFormValidity();
     });
     super.onInit();
-    OTPWidget.initializeWidget(widgetId, token);
-
-
   }
+
   void startTimer() {
     timerCount.value = 60; // 60 seconds cooldown
     _timer?.cancel();
@@ -94,14 +95,25 @@ class RegistrationController extends GetxController {
         timerCount.value--;
       } else {
         _timer?.cancel();
-        isOtpSent.value = false; // Allow resending
+        isOtpLoading.value = false; // Allow resending logic if needed
       }
     });
   }
-  // --- SEND OTP ---
+
+  // --- HELPER: Generate 4 Digit OTP ---
+  String _generateRandomOtp() {
+    var rng = Random();
+    return (1000 + rng.nextInt(9000)).toString();
+  }
+
+  // --- SEND OTP VIA TWILIO ---
   Future<void> sendOtp() async {
     String phone = mobileNumberController.text.trim();
+    // Remove '+' from country code if present, then combine
     String countryCode = countryController.text.trim().replaceAll("+", "");
+
+    // Twilio requires format like +15551234567
+    String fullPhoneNumber = '+$countryCode$phone';
 
     if (phone.isEmpty) {
       Get.snackbar("Error", "Enter mobile number");
@@ -111,106 +123,110 @@ class RegistrationController extends GetxController {
     try {
       isOtpLoading.value = true;
 
-      // 2. Call SDK to Send
-      // Note: Combine Country Code + Phone (e.g., "919876543210")
-      final data = {
-        'identifier': '$countryCode$phone'
-      };
+      // 1. Generate OTP
+      _generatedOtp = _generateRandomOtp();
+      debugPrint("Generated OTP (Dev Mode): $_generatedOtp");
 
-      final response = await OTPWidget.sendOTP(data);
+      // 2. Send SMS using Twilio
+      await twilioFlutter.sendSMS(
+        toNumber: fullPhoneNumber,
+        messageBody: 'Your Knight Horse verification code is: $_generatedOtp',
+      );
 
-      print("MSG91 Response: $response");
-
-      // Check for success (The SDK returns a Map, check documentation for specific success keys)
-      // Usually, if it returns a Map with 'message' or 'reqId', it worked.
-      if (response != null && response['message'] != null) {
-
-        // 3. STORE THE REQ ID (Crucial!)
-        currentReqId = response['message'];
-
-        isOtpSent.value = true;
-        startTimer(); // Start your countdown UI
-        Get.snackbar("Success", "OTP Sent!");
-      } else {
-        Get.snackbar("Error", "Failed to send OTP. Try again.");
-      }
+      // 3. Update UI
+      isOtpSent.value = true;
+      startTimer();
+      Get.snackbar("Success", "OTP Sent to $fullPhoneNumber");
 
     } catch (e) {
-      print("Error: $e");
-      Get.snackbar("Error", "Something went wrong.");
+      print("Twilio Error: $e");
+      Get.snackbar("Error", "Failed to send OTP. Check internet or number format.");
     } finally {
       isOtpLoading.value = false;
     }
   }
 
-  // --- VERIFY OTP ---
+  // --- VERIFY OTP (LOCAL CHECK) ---
   Future<bool> verifyOtp() async {
-    if (currentReqId == null) {
+    String userEnteredOtp = otpController.text.trim();
+
+    if (_generatedOtp == null) {
       Get.snackbar("Error", "Please send OTP first");
       return false;
     }
 
-    try {
-      final data = {
-        'reqId': currentReqId,
-        'otp': otpController.text.trim()
-      };
-
-      final dynamic response = await OTPWidget.verifyOTP(data);
-      print("Verify Response: $response");
-
-      if (response == null) {
-        Get.snackbar("Error", "No response from server");
-        return false;
-      }
-
-      if (response['type'] == 'success' ||
-          response['message'] == 'OTP verified successfully' ||
-          response['type'] == true) {
-
-        // --- THIS IS THE CHANGE ---
-        isOtpVerified.value = true; // Mark as verified
-        Get.snackbar("Success", "Mobile number verified successfully!");
-        // --------------------------
-
-        return true;
-      } else {
-        Get.snackbar("Error", response['message'] ?? "Invalid OTP");
-        return false;
-      }
-    } catch (e) {
-      print("Verification Error: $e");
-      Get.snackbar("Error", "Verification failed");
+    if (userEnteredOtp.isEmpty) {
+      Get.snackbar("Error", "Please enter the OTP");
       return false;
     }
-  }  void _updateFormValidity() {
+
+    // Compare local generated variable with user input
+    if (userEnteredOtp == _generatedOtp) {
+      isOtpVerified.value = true;
+      _timer?.cancel(); // Stop timer on success
+      Get.snackbar("Success", "Mobile number verified successfully!");
+      return true;
+    } else {
+      Get.snackbar("Error", "Invalid OTP. Please try again.");
+      return false;
+    }
+  }
+
+  void _updateFormValidity() {
     isFormValid.value = emailAddressController.text.isNotEmpty &&
         passwordController.text.isNotEmpty &&
         firstNameController.text.isNotEmpty &&
         lastNameController.text.isNotEmpty &&
-
-    countryController.text.isNotEmpty &&
-    mobileNumberController.text.isNotEmpty;
-
+        countryController.text.isNotEmpty &&
+        mobileNumberController.text.isNotEmpty;
   }
+
   Future<void> saveUserTypeGlobally(String userType) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('user_type', userType);
     debugPrint("✅ user_type saved globally: $userType");
   }
+
   Future<void> saveVerificationStatusGlobally(String verificationStatus) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('verificationStatus', verificationStatus); // <-- use argument
+    await prefs.setString('verificationStatus', verificationStatus);
     debugPrint("✅ verificationStatus saved globally: $verificationStatus");
   }
 
+  // 👇 EMAIL SENDING FUNCTION
+  Future<void> sendAdminAlertEmail() async {
+    String username = 'marketing.knighthorse@gmail.com';
+    String password = 'xyof cnmn lglf sobs'; // Your App Password
 
+    final smtpServer = gmail(username, password);
+
+    final message = Message()
+      ..from = Address(username, 'Knight Horse App')
+      ..recipients.add('marketing.knighthorse@gmail.com')
+      ..subject = 'New User Registration: ${firstNameController.text}'
+      ..text = '''
+        A new user has just registered!
+
+        Name: ${firstNameController.text} ${lastNameController.text}
+        Email: ${emailAddressController.text}
+        Phone: ${mobileNumberController.text}
+        User Type: ${userType.value}
+        
+        Please check the admin panel for details.
+      ''';
+
+    try {
+      final sendReport = await send(message, smtpServer);
+      debugPrint('✅ Admin alert email sent: ' + sendReport.toString());
+    } catch (e) {
+      debugPrint('🔴 Failed to send admin alert: $e');
+    }
+  }
 
   final _isLoading = false.obs;
   bool get isLoading => _isLoading.value;
 
   registrationProcess() async {
-    // --- NEW VALIDATION CHECK ---
     if (!isOtpVerified.value) {
       Get.snackbar(
           "Verification Required",
@@ -219,8 +235,9 @@ class RegistrationController extends GetxController {
           colorText: Colors.white,
           snackPosition: SnackPosition.BOTTOM
       );
-      return; // STOP EXECUTION HERE
+      return;
     }
+
     return AuthServices.registrationProcess(
       firstName: firstNameController.text,
       lastName: lastNameController.text,
@@ -231,28 +248,22 @@ class RegistrationController extends GetxController {
       gstNo: gstNoController.text,
       mobile_code: countryController.text,
       mobile: mobileNumberController.text,
-
       dialCode: LocalStorage.email,
       isLoading: _isLoading,
     ).then((value) async {
 
-      // --- THIS IS THE FIX ---
-      // If the service returns null or false, it means registration
-      // failed (and the service likely already showed an error snackbar).
       if (value == null || value == false) {
         debugPrint("Registration failed, service handled the error.");
-        return; // Stop execution here, don't show the dialog.
+        return;
       }
-      // --- END OF FIX ---
 
-      // If we get here, registration was truly successful.
+      sendAdminAlertEmail();
+
       await saveUserTypeGlobally(userType.value);
       await saveVerificationStatusGlobally(verificationStatus.value);
 
-      // Check verification status and handle accordingly
       if (verificationStatus.value == 'pending') {
         Get.dialog(
-          // ... your dialog code ...
           AlertDialog(
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -260,10 +271,7 @@ class RegistrationController extends GetxController {
             backgroundColor: Colors.white,
             title: const Text(
               "Verification Pending",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             content: const Text(
               "Your account verification request is pending. Please wait for admin approval.",
@@ -272,16 +280,12 @@ class RegistrationController extends GetxController {
             actions: [
               TextButton(
                 onPressed: () {
-                  Get.back(); // Close the dialog
-                  Get.offAllNamed(Routes.loginScreen); // Redirect to login screen
+                  Get.back();
+                  Get.offAllNamed(Routes.loginScreen);
                 },
                 child: const Text(
                   "OK",
-                  style: TextStyle(
-                    color: Colors.blue,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16,
-                  ),
+                  style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 16),
                 ),
               ),
             ],
@@ -289,13 +293,8 @@ class RegistrationController extends GetxController {
           barrierDismissible: false,
         );
         return;
-      } else if (verificationStatus.value == 'denied') {
-        // ... your 'denied' logic ...
-      } else if (verificationStatus.value == 'approved') {
-        // ... your 'approved' logic ...
       }
     }).catchError((error) {
-      // This will now only catch *unexpected* errors (network, server 500, etc.)
       Get.snackbar(
         "Error",
         "Something went wrong: $error",

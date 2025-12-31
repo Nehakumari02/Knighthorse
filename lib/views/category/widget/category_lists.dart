@@ -9,7 +9,7 @@ class CategoryLists extends GetView<CategoryController> {
         padding: EdgeInsets.only(
           right: Dimensions.widthSize,
         ),
-        reverse: true,
+        reverse: false,
         controller: controller.categoryScrollController,
         itemCount: controller.categories.length,
         itemBuilder: (context, index) {

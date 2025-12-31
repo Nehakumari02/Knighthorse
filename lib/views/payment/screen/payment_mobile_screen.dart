@@ -22,7 +22,12 @@ class PaymentMobileScreen extends GetView<CartController> {
             color: CustomColor.whiteColor,
           ),
           BillingDetails(),
-          PaymentMethods()
+          Visibility(
+            visible: false, // Set to 'false' to hide it, 'true' to show it
+            child: PaymentMethods(),
+          ),
+          PlaceOrderButton()
+
         ],
       ),
     );

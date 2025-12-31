@@ -10,8 +10,15 @@ class SummarySection extends GetView<CartController> {
         bottom: Dimensions.paddingSize * 0.2,
         top: Dimensions.paddingSize * 0.5,
       ),
-      child: Obx(
-        () => Column(
+      child: Obx(() {
+        // 👇 1. CHECK USER TYPE
+        // If Wholesaler -> Hide this entire section
+        if (controller.userType.value.toLowerCase() == 'wholesaler') {
+          return const SizedBox.shrink();
+        }
+
+        // 👇 2. RETAILER -> Show the summary as normal
+        return Column(
           children: [
             _summaryRow(Strings.subTotal, controller.subtotal.value.toStringAsFixed(2)),
             _summaryRow(Strings.discount, controller.discount.value.toStringAsFixed(2)),
@@ -19,8 +26,8 @@ class SummarySection extends GetView<CartController> {
             _summaryRow(Strings.total, controller.total.value.toStringAsFixed(2),
                 isTotal: true),
           ],
-        ),
-      ),
+        );
+      }),
     );
   }
 

@@ -9,7 +9,10 @@ class BalanceSheetCard extends GetView<ProfileController> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(
+    return Visibility(
+
+    visible :false,
+    child: Obx(
       () => controller.isLoading
           ? Shimmer.fromColors(
               baseColor: Colors.grey.shade300,
@@ -115,6 +118,8 @@ class BalanceSheetCard extends GetView<ProfileController> {
                 ),
               ),
             ),
+    ),
     );
   }
+
 }

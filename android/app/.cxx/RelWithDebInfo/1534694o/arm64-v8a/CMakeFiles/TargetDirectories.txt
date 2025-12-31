@@ -1,0 +1,2 @@
+/Users/neha/Downloads/main-files/admart-app/Knighthorse/android/app/.cxx/RelWithDebInfo/1534694o/arm64-v8a/CMakeFiles/edit_cache.dir
+/Users/neha/Downloads/main-files/admart-app/Knighthorse/android/app/.cxx/RelWithDebInfo/1534694o/arm64-v8a/CMakeFiles/rebuild_cache.dir

@@ -16,8 +16,13 @@ class DeliveryDetails extends GetView<CartController> {
           fontWeight: FontWeight.w500,
         ),
         Sizes.height.v10,
-        ShipmentWidget(),
-        Sizes.height.v10,
+        // 👇 WRAP WITH VISIBILITY WIDGET 👇
+        Visibility(
+          visible: false, // This hides the widget completely
+          child: ShipmentWidget(),
+        ),
+        // 👆 ---------------------------- 👆
+
         _detailsInputField()
       ],
     );
@@ -26,9 +31,7 @@ class DeliveryDetails extends GetView<CartController> {
   _detailsInputField() {
     return Column(
       children: [
-        _inputField(controller.phoneController, Strings.phoneNumber,
-            Strings.phoneNumber,
-            textInputType: TextInputType.number),
+
         Sizes.height.betweenInputBox,
         _inputField(controller.emailController, Strings.email, Strings.email, readOnly:Get.find<ProfileController>().userEmail.value.isNotEmpty? true : false),
         Sizes.height.betweenInputBox,

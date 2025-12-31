@@ -131,6 +131,13 @@ class AuthServices {
       body: inputBody,
       onSuccess: (value) {
         _verifyPhoneCodeModel = value!;
+        print("API Response: ${value!.toJson()}");
+
+        LocalStorage.save(
+          token: _verifyPhoneCodeModel.data.accessToken,
+          isLoggedIn: true,
+        );
+
         LocalStorage.save(userStatus: _verifyPhoneCodeModel.data.userStatus);
         if (_verifyPhoneCodeModel.data.userStatus == 1) {
           Routes.registrationScreen.toNamed;
@@ -336,15 +343,15 @@ class AuthServices {
 
   static Future<GoogleLoginModel> loginWithGoogle(
 
-    String url,
-    RxBool isLoading,
-  ) async {
+      String url,
+      RxBool isLoading,
+      ) async {
     isLoading.value = true;
     // update();
     Map<String, dynamic> inputBody = {
       'token': url,
       'redirect_url':
-          '${ApiConfig.mainDomain}/user/social/google/redirect'
+      '${ApiConfig.mainDomain}/user/social/google/redirect'
     };
 
     await ApiServicesGoogle.googleLoginProcessApi(body: inputBody)

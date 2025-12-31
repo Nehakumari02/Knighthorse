@@ -1,5 +1,6 @@
 part of 'dashboard_screen.dart';
 
+
 class DashboardMobileScreen extends GetView<DashboardController> {
   const DashboardMobileScreen({super.key});
 
@@ -9,7 +10,8 @@ class DashboardMobileScreen extends GetView<DashboardController> {
         appBar: TopBarWidget(),
         body: Obx(() => controller.isBannerOfferLoading ||
                 controller.isPopularLoading ||
-                controller.specialProductLoading
+                controller.specialProductLoading ||
+                controller.isAllProductLoading
             ? Loader()
             : _bodyWidget(context)));
   }
@@ -20,9 +22,12 @@ class DashboardMobileScreen extends GetView<DashboardController> {
         PromotionCarouselWidget(),
         SearchButton(),
         CategorySection(),
+        FeaturedCategoriesSection(),
+        AllProductsGrid(),
         PopularProductGrid(),
         SpecialOfferProduct(),
         TodaysSpecialOffers(),
+
       ],
     );
   }

@@ -30,15 +30,20 @@ class BillingDetails extends GetView<CartController> {
                 keys: Strings.subtotal,
                 value: controller.total.value.toStringAsFixed(2),
               ),
-              DoubleSideTextWidget(
-                keys: Strings.deliveryCharge,
-                value: controller.deliveryCharge.value.toStringAsFixed(2),
-              ),
+              // DoubleSideTextWidget(
+              //   keys: Strings.deliveryCharge,
+              //   value: controller.deliveryCharge.value.toStringAsFixed(2),
+              // ),
               _checkBoxWidget(context),
-              DoubleSideTextWidget(
-                  keys: Strings.walletBalance,
-                  value: double.parse(double.parse(controller.walletBalance.toString()).toStringAsFixed(2))
-                      .toStringAsFixed(2)),
+              // --- Hiding Wallet Balance ---
+              Visibility(
+                visible: false, // <--- Set to false to hide wallet balance
+                child: DoubleSideTextWidget(
+                    keys: Strings.walletBalance,
+                    value: double.parse(double.parse(controller.walletBalance.toString()).toStringAsFixed(2))
+                        .toStringAsFixed(2)),
+              ),
+              // -----------------------------
               DividerWidget(),
               DoubleSideTextWidget(
                   keys: Strings.totalCost,
@@ -53,7 +58,8 @@ class BillingDetails extends GetView<CartController> {
   _checkBoxWidget(BuildContext context) {
     return Obx(() {
       return Visibility(
-        visible: DeliveryServices.bagStatus.value == 1,
+        visible: false, // <--- Changed to false to hide the widget entirely
+        // visible: DeliveryServices.bagStatus.value == 1, // (Old logic commented out)
         child: Row(
           mainAxisAlignment: mainSpaceBet,
           children: [

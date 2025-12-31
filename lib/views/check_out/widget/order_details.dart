@@ -145,10 +145,10 @@ class OrderDetails extends GetView<CartController> {
                                 )),
                         ],
                       ),
-                      TextWidget(
-                        _getShipmentName(shipmentId),
-                        typographyStyle: TypographyStyle.labelMedium,
-                      ),
+                      // TextWidget(
+                      //   _getShipmentName(shipmentId),
+                      //   typographyStyle: TypographyStyle.labelMedium,
+                      // ),
                     ],
                   ),
                 ),

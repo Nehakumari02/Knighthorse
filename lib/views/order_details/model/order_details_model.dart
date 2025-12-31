@@ -32,7 +32,7 @@ class OrderDetailsModelData {
       OrderDetailsModelData(
         transaction: Transaction.fromJson(json["transaction"]),
         bookingData: DataBookingData.fromJson(json["booking_data"]),
-        currencySymbol: json["currency_symbol"],
+        currencySymbol: json["currency_symbol"] ?? "\$",
       );
 }
 
@@ -50,12 +50,13 @@ class DataBookingData {
   factory DataBookingData.fromJson(Map<String, dynamic> json) =>
       DataBookingData(
         products: List<Product>.from(
-            json["products"].map((x) => Product.fromJson(x))),
+            json["products"]?.map((x) => Product.fromJson(x)) ?? []),
         deliveryInfo: DeliveryInfo.fromJson(json["delivery_info"]),
         userCart: BookingDataUserCart.fromJson(json["user_cart"]),
       );
 }
 
+// 👇👇👇 CRITICAL FIXES HERE 👇👇👇
 class DeliveryInfo {
   String address;
   String phone;
@@ -76,44 +77,51 @@ class DeliveryInfo {
   });
 
   factory DeliveryInfo.fromJson(Map<String, dynamic> json) => DeliveryInfo(
-        address: json["address"],
-        phone: json["phone"],
-        email: json["email"],
-        deliveryCharge: json["delivery_charge"],
-        notes: json["notes"],
-        reusableBag: json["reusable_bag"],
-        deliveryType: json["delivery_type"],
-      );
+    // We use ?? "" to default to empty string if server sends null
+    address: json["address"] ?? "",
+    phone: json["phone"] ?? "",
+    email: json["email"] ?? "",
+    deliveryCharge: json["delivery_charge"]?.toString() ?? "0",
+    notes: json["notes"] ?? "", // 👈 THIS WAS YOUR CRASH
+    reusableBag: json["reusable_bag"]?.toString() ?? "",
+    deliveryType: json["delivery_type"] ?? "",
+  );
 }
 
 class Product {
   String id;
   String name;
   String price;
+  String color;
   String mainPrice;
   String offerPrice;
   String image;
   String quantity;
+  String? subCategory;
 
   Product({
     required this.id,
     required this.name,
     required this.price,
+    required this.color,
     required this.mainPrice,
     required this.offerPrice,
     required this.image,
     required this.quantity,
+    this.subCategory, // <--- Add to constructor
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => Product(
-        id: json["id"],
-        name: json["name"],
-        price: json["price"],
-        mainPrice: json["main_price"],
-        offerPrice: json["offer_price"],
-        image: json["image"],
-        quantity: json["quantity"],
-      );
+    id: json["id"]?.toString() ?? "",
+    name: json["name"] ?? "",
+    price: json["price"]?.toString() ?? "0",
+    color: json["color"] ?? "",
+    mainPrice: json["main_price"]?.toString() ?? "0",
+    offerPrice: json["offer_price"]?.toString() ?? "0",
+    image: json["image"] ?? "",
+    quantity: json["quantity"]?.toString() ?? "0",
+    subCategory: json["sub_category"],
+  );
 }
 
 class BookingDataUserCart {
@@ -129,12 +137,13 @@ class BookingDataUserCart {
 
   factory BookingDataUserCart.fromJson(Map<String, dynamic> json) =>
       BookingDataUserCart(
-        subTotal: json["sub_total"],
-        deliveryCharge: json["delivery_charge"],
-        total: json["total"],
+        subTotal: json["sub_total"]?.toString() ?? "0",
+        deliveryCharge: json["delivery_charge"]?.toString() ?? "0",
+        total: json["total"]?.toString() ?? "0",
       );
 }
 
+// 👇👇👇 CRITICAL FIXES HERE TOO 👇👇👇
 class Transaction {
   int id;
   String uuid;
@@ -163,19 +172,20 @@ class Transaction {
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) => Transaction(
-        id: json["id"],
-        uuid: json["uuid"],
-        trxId: json["trx_id"],
-        paymentMethod: json["payment_method"],
-        paymentGatewayCharge: json["payment_gateway_charge"],
-        status: json["status"],
-        statusValue: json["status_value"],
-        createdAt: json["created_at"],
-        paymentGateway: json["payment_gateway"],
-        user: json["user"] != null ? User.fromJson(json["user"]) : null,
-        orderShipment: List<OrderShipment>.from(
-            json["order_shipment"].map((x) => OrderShipment.fromJson(x))),
-      );
+    id: json["id"] ?? 0,
+    uuid: json["uuid"] ?? "",
+    trxId: json["trx_id"] ?? "",
+    paymentMethod: json["payment_method"] ?? "", // 👈 Fixed possible null
+    paymentGatewayCharge: json["payment_gateway_charge"]?.toString() ?? "0",
+    status: json["status"] ?? 0,
+    statusValue: json["status_value"] ?? "",
+    createdAt: json["created_at"] ?? "",
+    paymentGateway: json["payment_gateway"],
+    user: json["user"] != null ? User.fromJson(json["user"]) : null,
+    orderShipment: json["order_shipment"] != null
+        ? List<OrderShipment>.from(json["order_shipment"].map((x) => OrderShipment.fromJson(x)))
+        : [],
+  );
 }
 
 class OrderShipment {
@@ -208,19 +218,19 @@ class OrderShipment {
   });
 
   factory OrderShipment.fromJson(Map<String, dynamic> json) => OrderShipment(
-        id: json["id"],
-        productOrderId: json["product_order_id"],
-        shipmentId: json["shipment_id"],
-        userId: json["user_id"],
-        trackingNumber: json["tracking_number"],
-        startTime: json["start_time"],
-        endTime: json["end_time"],
-        deliveryDate: DateTime.parse(json["delivery_date"]),
-        deliveryCharge: json["delivery_charge"],
-        shipmentStatus: json["shipment_status"],
-        shipment: Shipment.fromJson(json["shipment"]),
-        productOrder: ProductOrder.fromJson(json["product_order"]),
-      );
+    id: json["id"],
+    productOrderId: json["product_order_id"],
+    shipmentId: json["shipment_id"],
+    userId: json["user_id"],
+    trackingNumber: json["tracking_number"] ?? "",
+    startTime: json["start_time"] ?? "",
+    endTime: json["end_time"] ?? "",
+    deliveryDate: DateTime.parse(json["delivery_date"]),
+    deliveryCharge: json["delivery_charge"]?.toString() ?? "0",
+    shipmentStatus: json["shipment_status"],
+    shipment: Shipment.fromJson(json["shipment"]),
+    productOrder: ProductOrder.fromJson(json["product_order"]),
+  );
 }
 
 class ProductOrder {
@@ -269,27 +279,27 @@ class ProductOrder {
   });
 
   factory ProductOrder.fromJson(Map<String, dynamic> json) => ProductOrder(
-        id: json["id"],
-        userId: json["user_id"],
-        bookingData: ProductOrderBookingData.fromJson(json["booking_data"]),
-        paymentGatewayCurrencyId: json["payment_gateway_currency_id"],
-        orderId: json["order_id"],
-        trxId: json["trx_id"],
-        bookingExpSeconds: json["booking_exp_seconds"],
-        paymentMethod: json["payment_method"],
-        uuid: json["uuid"],
-        totalCharge: json["total_charge"],
-        price: json["price"],
-        payablePrice: json["payable_price"],
-        gatewayPayablePrice: json["gateway_payable_price"],
-        message: json["message"],
-        type: json["type"],
-        paymentCurrency: json["payment_currency"],
-        remark: json["remark"],
-        details: json["details"],
-        status: json["status"],
-        rejectReason: json["reject_reason"],
-      );
+    id: json["id"],
+    userId: json["user_id"],
+    bookingData: ProductOrderBookingData.fromJson(json["booking_data"]),
+    paymentGatewayCurrencyId: json["payment_gateway_currency_id"],
+    orderId: json["order_id"],
+    trxId: json["trx_id"],
+    bookingExpSeconds: json["booking_exp_seconds"],
+    paymentMethod: json["payment_method"] ?? "",
+    uuid: json["uuid"],
+    totalCharge: json["total_charge"]?.toString() ?? "",
+    price: json["price"]?.toString() ?? "",
+    payablePrice: json["payable_price"]?.toString() ?? "",
+    gatewayPayablePrice: json["gateway_payable_price"],
+    message: json["message"],
+    type: json["type"] ?? "",
+    paymentCurrency: json["payment_currency"],
+    remark: json["remark"] ?? "",
+    details: json["details"],
+    status: json["status"],
+    rejectReason: json["reject_reason"],
+  );
 }
 
 class ProductOrderBookingData {
@@ -324,8 +334,8 @@ class BookingDataData {
       BookingDataData(
         userCart: DataUserCart.fromJson(json["user_cart"]),
         deliveryInfo: DeliveryInfo.fromJson(json["delivery_info"]),
-        paymentMethod: json["payment_method"],
-        totalCost: json["total_cost"],
+        paymentMethod: json["payment_method"] ?? "",
+        totalCost: json["total_cost"]?.toString() ?? "",
         shipmentInfo: ShipmentInfo.fromJson(json["shipment_info"]),
       );
 }
@@ -342,12 +352,12 @@ class ShipmentInfo {
   });
 
   factory ShipmentInfo.fromJson(Map<String, dynamic> json) => ShipmentInfo(
-        togetherTimeSlotStart: json["together_time_slot_start"] ?? "",
-        togetherTimeSlotEnd: json["together_time_slot_end"] ?? "",
-        togetherDeliveryDate: json["together_delivery_date"] != null
+    togetherTimeSlotStart: json["together_time_slot_start"] ?? "",
+    togetherTimeSlotEnd: json["together_time_slot_end"] ?? "",
+    togetherDeliveryDate: json["together_delivery_date"] != null
         ? DateTime.parse(json["together_delivery_date"])
         : null,
-      );
+  );
 }
 
 class DataUserCart {
@@ -376,17 +386,17 @@ class DataUserCart {
   });
 
   factory DataUserCart.fromJson(Map<String, dynamic> json) => DataUserCart(
-        id: json["id"],
-        data: List<Product>.from(json["data"].map((x) => Product.fromJson(x))),
-        userId: json["user_id"],
-        sessionId: json["session_id"],
-        status: json["status"],
-        uuid: json["uuid"],
-        subTotal: json["sub_total"],
-        checkout: json["checkout"],
-        createdAt: DateTime.parse(json["created_at"]),
-        updatedAt: DateTime.parse(json["updated_at"]),
-      );
+    id: json["id"],
+    data: List<Product>.from(json["data"].map((x) => Product.fromJson(x))),
+    userId: json["user_id"],
+    sessionId: json["session_id"],
+    status: json["status"],
+    uuid: json["uuid"],
+    subTotal: json["sub_total"]?.toString() ?? "0",
+    checkout: json["checkout"],
+    createdAt: DateTime.parse(json["created_at"]),
+    updatedAt: DateTime.parse(json["updated_at"]),
+  );
 }
 
 class Shipment {
@@ -411,15 +421,15 @@ class Shipment {
   });
 
   factory Shipment.fromJson(Map<String, dynamic> json) => Shipment(
-        id: json["id"],
-        name: json["name"],
-        deliveryDelayDays: json["delivery_delay_days"],
-        deliveryCharge: json["delivery_charge"],
-        starTime: json["star_time"],
-        endTime: json["end_time"],
-        timeRange: json["time_range"],
-        shipmentDefault: json["default"],
-      );
+    id: json["id"],
+    name: json["name"] ?? "",
+    deliveryDelayDays: json["delivery_delay_days"]?.toString() ?? "",
+    deliveryCharge: json["delivery_charge"]?.toString() ?? "",
+    starTime: json["star_time"] ?? "",
+    endTime: json["end_time"] ?? "",
+    timeRange: json["time_range"] ?? "",
+    shipmentDefault: json["default"] ?? 0,
+  );
 }
 
 class User {
@@ -462,24 +472,24 @@ class User {
   });
 
   factory User.fromJson(Map<String, dynamic> json) => User(
-        id: json["id"],
-        firstname: json["firstname"],
-        lastname: json["lastname"],
-        username: json["username"],
-        email: json["email"],
-        mobileCode: json["mobile_code"],
-        mobile: json["mobile"],
-        fullMobile: json["full_mobile"],
-        driver: json["driver"],
-        referralId: json["referral_id"],
-        image: json["image"],
-        status: json["status"],
-        freeDeliveryStatus: json["free_delivery_status"],
-        totalSpendAmount: json["total_spend_amount"],
-        address: json["address"],
-        fullname: json["fullname"],
-        userImage: json["userImage"],
-      );
+    id: json["id"],
+    firstname: json["firstname"] ?? "",
+    lastname: json["lastname"] ?? "",
+    username: json["username"] ?? "",
+    email: json["email"] ?? "",
+    mobileCode: json["mobile_code"],
+    mobile: json["mobile"],
+    fullMobile: json["full_mobile"],
+    driver: json["driver"],
+    referralId: json["referral_id"],
+    image: json["image"],
+    status: json["status"],
+    freeDeliveryStatus: json["free_delivery_status"],
+    totalSpendAmount: json["total_spend_amount"],
+    address: json["address"],
+    fullname: json["fullname"] ?? "",
+    userImage: json["userImage"] ?? "",
+  );
 }
 
 class Message {
@@ -490,6 +500,6 @@ class Message {
   });
 
   factory Message.fromJson(Map<String, dynamic> json) => Message(
-        success: List<String>.from(json["success"].map((x) => x)),
-      );
+    success: List<String>.from(json["success"].map((x) => x)),
+  );
 }

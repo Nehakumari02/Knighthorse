@@ -30,23 +30,28 @@ class ShipmentInfo extends GetView<OrderDetailsController> {
                 Strings.trackingNumber,
                 controller.trackingNumber.value,
               ),
+              // rightWidget: _rightInfoWidget(
+              //   Strings.deliveryDate,
+              //   controller.deliveryDate.value,
+              // ),
+
               rightWidget: _rightInfoWidget(
-                Strings.deliveryDate,
-                controller.deliveryDate.value,
+                "",
+                '',
               ),
             ),
             DividerWidget(),
-            DoubleSideTextWidget(
-              leftWidget: _leftInfoWidget(
-                Strings.deliveryTime,
-                controller.deliveryTime.value,
-              ),
-              rightWidget: _rightInfoWidget(
-                Strings.shippingMethod,
-                controller.shippingMethod.value,
-              ),
-            ),
-            DividerWidget(),
+            // DoubleSideTextWidget(
+            //   leftWidget: _leftInfoWidget(
+            //     Strings.deliveryTime,
+            //     controller.deliveryTime.value,
+            //   ),
+            //   rightWidget: _rightInfoWidget(
+            //     Strings.shippingMethod,
+            //     controller.shippingMethod.value,
+            //   ),
+            // ),
+            // DividerWidget(),
             DoubleSideTextWidget(
               leftWidget: _leftInfoWidget(
                 Strings.deliveryCharge,

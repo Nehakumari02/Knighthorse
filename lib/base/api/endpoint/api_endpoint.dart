@@ -2,6 +2,8 @@ import 'package:dynamic_languages/dynamic_languages.dart';
 
 class ApiConfig {
   static const String mainDomain = "https://thebudgetpe.com/demo/Knighthorse/app";
+  // static const String mainDomain = "http://192.168.1.113:8000";
+
   static const String baseUrl = "$mainDomain/api/v1";
   static const String languageUrl = "$baseUrl/settings/languages";
 }
@@ -37,6 +39,8 @@ enum ApiEndpoint {
   popularProduct('/product/popular'),
   productDetails('/product/details'),
   specialOffer('/product/special/offer'),
+  allProductList('/product/list'),
+  featuredCategories('/product/featuredCategories'),
 
   // category
   categoryList('/product/category'),

@@ -22,14 +22,20 @@ import '../../profile/controller/profile_controller.dart';
 import '../model/cart_model.dart';
 import '../model/online_payment_model.dart';
 import '../model/payment_gateway_model.dart';
+import '../../update_profile/model/profile_info_model.dart';
+import 'package:mailer/mailer.dart' as mail;
+import 'package:mailer/smtp_server.dart';
+import 'package:intl/intl.dart';
 
 class CartController extends GetxController {
   final CartDatabaseHelper _dbHelper = CartDatabaseHelper();
+  var userType = "retailer".obs;
 
   @override
   void onInit() {
     super.onInit();
     if (LocalStorage.isLoggedIn)
+      _fetchUserType(); // 👈 2. FETCH TYPE ON LOAD
       getCartItems().then((_) {
         if (cartItems.isNotEmpty) updateCartProcess();
       });
@@ -37,7 +43,21 @@ class CartController extends GetxController {
     loadCartFromDB();
     // _setCalculation();
     shipmentType = ShipmentServices.shipmentList;
-    _checkDetailsValidity();    
+    _checkDetailsValidity();
+  }
+  // 👇 3. LOGIC TO GET USER ROLE
+  void _fetchUserType() async {
+    await RequestProcess().request(
+      apiEndpoint: ApiEndpoint.profileInfo,
+      fromJson: ProfileInfoModel.fromJson,
+      isLoading: false.obs,
+      onSuccess: (response) {
+        if (response != null) {
+          userType.value = response.data.userInfo.user_type ?? "retailer";
+          debugPrint("✅ Cart User Type: ${userType.value}");
+        }
+      },
+    );
   }
 
   RxList<CartDatum> cartItems = <CartDatum>[].obs;
@@ -47,6 +67,82 @@ class CartController extends GetxController {
     final items = await _dbHelper.getAllCartItems();
     cartItems.assignAll(items);
     _setCalculation();
+  }
+
+  // 1. Add these imports at the top of the file if not present:
+// import 'package:mailer/mailer.dart';
+// import 'package:mailer/smtp_server.dart';
+
+  Future<void> _sendOrderEmailToAdmin() async {
+    // 1. Credentials
+    String username = 'marketing.knighthorse@gmail.com';
+    String password = 'xyof cnmn lglf sobs';
+
+    final smtpServer = gmail(username, password);
+
+    // 2. Start building the email body
+    StringBuffer body = StringBuffer();
+
+    // --- HEADER ---
+
+    body.writeln("          NEW ORDER RECEIVED            ");
+    body.writeln("");
+
+    // --- CUSTOMER INFO ---
+    body.writeln("BILLING DETAILS");
+    body.writeln("----------------------------------------");
+    body.writeln("Phone   : ${phoneController.text}");
+    body.writeln("Email   : ${emailController.text}");
+    body.writeln("Address : ${addressController.text}");
+    body.writeln("Note    : ${orderNoteController.text}");
+    body.writeln("Payment : ${paymentMethod.value.toUpperCase()}");
+    body.writeln("");
+
+    // --- ITEM LIST ---
+    body.writeln("ORDER SUMMARY");
+    body.writeln("----------------------------------------");
+
+    for (var item in cartItems) {
+      double price = double.tryParse(item.price.toString()) ?? 0.0;
+      int qty = item.quantity.value;
+      double rowTotal = price * qty;
+
+      // Clean Receipt Format
+      body.writeln("${item.name}");
+      body.writeln("Qty: $qty  x  ${item.price}");
+      body.writeln("Item Total: $rowTotal");
+      body.writeln("----------------------------------------");
+    }
+
+    // --- TOTALS ---
+    body.writeln("");
+    body.writeln("PAYMENT BREAKDOWN");
+    body.writeln("----------------------------------------");
+    body.writeln("Subtotal       : ${subtotal.value}");
+    body.writeln("Delivery Fee   : ${deliveryCharge.value}");
+
+    if (isChecked.value) {
+      body.writeln("Reusable Bag   : ${reusableBagPrice.value}");
+    }
+
+    body.writeln("----------------------------------------");
+    body.writeln("GRAND TOTAL    : ${totalCost.value}");
+    body.writeln("****************************************");
+
+    // 3. Create the Message
+    final message = mail.Message()
+      ..from = mail.Address(username, 'Knighthorse App')
+      ..recipients.add('nehapanwal02@gmail.com')
+      ..subject = 'New Order: ${totalCost.value} (${phoneController.text})'
+      ..text = body.toString();
+
+    // 4. Send
+    try {
+      final sendReport = await mail.send(message, smtpServer);
+      print('✅ Clean Receipt Email Sent');
+    } catch (e) {
+      print('🔴 Failed to send admin email: $e');
+    }
   }
 
   Future<void> addToCart(CartDatum item) async {
@@ -198,7 +294,7 @@ class CartController extends GetxController {
 
   void _listenToQuantity(CartDatum item) {
     ever(item.quantity, (_) {
-      
+
       updateCart(item).then((_){
         _setCalculation();
       });
@@ -364,7 +460,13 @@ void deliverySet() {
       final item = cartItems[index];
       final currentQty = item.quantity.value;
       final availableQty = int.parse(item.availableQuantity!);
-
+      int limit = int.tryParse(item.purchase_limit ?? "0") ?? 0;
+      debugPrint("🚀 Checkout Body: $limit"); // Print to verify
+      // 2. Check Purchase Limit Constraint first
+      if (limit > 0 && currentQty >= limit) {
+        CustomSnackBar.error("Maximum purchase limit for this product is $limit");
+        return; // Stop the function here
+      }
       if (currentQty < availableQty) {
         item.quantity.value++;
         _debounceUpdate(item);
@@ -408,14 +510,14 @@ void deliverySet() {
 
   var isDetailsValid = false.obs;
   _updateDetailsValidity(){
-    isDetailsValid.value = phoneController.text.isNotEmpty && addressController.text.isNotEmpty;
+    isDetailsValid.value =  addressController.text.isNotEmpty;
   }
 
   _checkDetailsValidity(){
     phoneController.addListener(_updateDetailsValidity);
     addressController.addListener(_updateDetailsValidity);
   }
-  
+
 
   var _isCheckingOut = false.obs;
   bool get isCheckingOut => _isCheckingOut.value;
@@ -426,6 +528,31 @@ void deliverySet() {
   late OnlinePaymentModel _onlinePaymentModel;
   OnlinePaymentModel get onlinePaymentModel => _onlinePaymentModel;
   Future<dynamic> checkoutProcess() async {
+
+    // ======================================================
+    // 1. CALCULATE DEFAULTS (The Fix)
+    // ======================================================
+
+    // A. Default Date (10 Days Later)
+    String defaultDate = DateFormat('yyyy-MM-dd')
+        .format(DateTime.now().add(const Duration(days: 10)));
+
+    // B. Default Time (09:00 AM - 06:00 PM)
+    String defaultStart = "09:00";
+    String defaultEnd = "18:00";
+
+    // Helper function to safe-guard empty values
+    String safeDate(String? input) {
+      return (input == null || input.isEmpty) ? defaultDate : input;
+    }
+
+    String safeStartTime(String? input) {
+      return (input == null || input.isEmpty) ? defaultStart : input;
+    }
+
+    String safeEndTime(String? input) {
+      return (input == null || input.isEmpty) ? defaultEnd : input;
+    }
 
     Map<String, dynamic> inputBody = {
       "cart_id": cartId.value.toString(),
@@ -443,31 +570,44 @@ void deliverySet() {
       "delivery_type": selectedDelivaryTypeName.value,
     };
 
+    // ======================================================
+    // 2. APPLY DEFAULTS TO DELIVERY TYPE LOGIC
+    // ======================================================
+
     if (selectedDelivaryType.value == 1) {
+      // Logic for "Together" Delivery
       final date = selectedDates.isNotEmpty ? selectedDates[0].value : "";
       final time = selectedTimes.isNotEmpty ? selectedTimes[0].value : "";
       final parts = time.split("-");
 
-      inputBody["together_time_slot_start"] = parts.isNotEmpty ? parts[0] : "";
-      inputBody["together_time_slot_end"] = parts.length > 1 ? parts[1] : "";
-      inputBody["together_delivery_date"] = date;
+      String rawStart = parts.isNotEmpty ? parts[0] : "";
+      String rawEnd = parts.length > 1 ? parts[1] : "";
+
+      // ✅ Apply Defaults
+      inputBody["together_time_slot_start"] = safeStartTime(rawStart);
+      inputBody["together_time_slot_end"] = safeEndTime(rawEnd);
+      inputBody["together_delivery_date"] = safeDate(date);
+
     } else {
+      // Logic for "Separate" Delivery
       for (int i = 0; i < shipmentType.length; i++) {
         final shipmentId = shipmentType[i].id;
         final date = selectedDates.length > i ? selectedDates[i].value : "";
         final time = selectedTimes.length > i ? selectedTimes[i].value : "";
         final parts = time.split("-");
 
-        inputBody["time_slots[$shipmentId][start]"] =
-            parts.isNotEmpty ? parts[0] : "";
-        inputBody["time_slots[$shipmentId][end]"] =
-            parts.length > 1 ? parts[1] : "";
-        inputBody["delivery_date[$shipmentId]"] = date;
+        String rawStart = parts.isNotEmpty ? parts[0] : "";
+        String rawEnd = parts.length > 1 ? parts[1] : "";
+
+        // ✅ Apply Defaults per shipment
+        inputBody["time_slots[$shipmentId][start]"] = safeStartTime(rawStart);
+        inputBody["time_slots[$shipmentId][end]"] = safeEndTime(rawEnd);
+        inputBody["delivery_date[$shipmentId]"] = safeDate(date);
       }
     }
 
     if (paymentMethod.value == "cash" || paymentMethod.value == "wallet") {
-      debugPrint(inputBody.toString());
+      debugPrint("🚀 Checkout Body: $inputBody"); // Print to verify
       return RequestProcess().request(
         fromJson: CommonSuccessModel.fromJson,
         apiEndpoint: ApiEndpoint.checkOutByCash,
@@ -478,12 +618,13 @@ void deliverySet() {
         isLoading: _isCheckingOut,
         onSuccess: (value) {
           _checkOutModel = value!;
+          _sendOrderEmailToAdmin();
           debugPrint("Complete cash${_checkOutModel}");
           _goToConfirmScreen();
         },
       );
     } else {
-      debugPrint(inputBody.toString());
+      debugPrint("🚀 Checkout Body: $inputBody");
       return RequestProcess().request(
         fromJson: OnlinePaymentModel.fromJson,
         apiEndpoint: ApiEndpoint.checkOutByOnline,

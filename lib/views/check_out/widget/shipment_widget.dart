@@ -140,6 +140,35 @@ class ShipmentWidget extends GetView<CartController> {
 
   _delivaryDateAndTime(BuildContext context, int index, String start, end, gap,
       String delayDays) {
+    // 👇👇👇 I INSERTED THIS ENTIRE NEW BLOCK HERE 👇👇👇
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 1. Set Date to 10 Days Later
+      if (controller.selectedDates.length > index &&
+          controller.selectedDates[index].value.isEmpty) {
+
+        DateTime tenDaysLater = DateTime.now().add(const Duration(days: 10));
+        String formattedDate = DateFormat('yyyy-MM-dd').format(tenDaysLater);
+
+        controller.selectedDates[index].value = formattedDate;
+      }
+
+      // 2. Set Default Time (First Slot)
+      if (controller.selectedTimes.length > index &&
+          controller.selectedTimes[index].value.isEmpty) {
+        try {
+          DateFormat timeFormat = DateFormat("HH:mm");
+          DateTime startTime = timeFormat.parse(start);
+          int gapMinutes = int.tryParse(gap.toString()) ?? 60;
+          DateTime endTime = startTime.add(Duration(minutes: gapMinutes));
+
+          controller.selectedTimes[index].value =
+          "${timeFormat.format(startTime)}-${timeFormat.format(endTime)}";
+        } catch (e) {
+          debugPrint("Error calculating time: $e");
+        }
+      }
+    });
+    // 👆👆👆 END OF NEW BLOCK 👆👆👆
     return Row(
       mainAxisAlignment: mainSpaceBet,
       children: [

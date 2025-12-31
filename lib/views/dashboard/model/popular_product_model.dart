@@ -44,6 +44,8 @@ class PopularProductModelData {
 
 class Product {
     int id;
+    int? categoryId;   // <--- ADD THIS
+    String? userType;  // <--- ADD THIS
     ProductData data;
     String price;
     String? offerPrice;
@@ -66,6 +68,8 @@ class Product {
 
     Product({
         required this.id,
+        this.categoryId, // <--- ADD THIS
+        this.userType,   // <--- ADD THIS
         required this.data,
         required this.price,
         required this.offerPrice,
@@ -89,6 +93,8 @@ class Product {
 
     factory Product.fromJson(Map<String, dynamic> json) => Product(
         id: json["id"],
+        categoryId: json['category_id'], // <--- ADD THIS
+        userType: json['user_type'],     // <--- ADD THIS
         data: ProductData.fromJson(json["data"]),
         price: json["price"],
         offerPrice: json["offer_price"] ?? "0.0",

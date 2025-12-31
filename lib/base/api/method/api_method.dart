@@ -18,7 +18,7 @@ Map<String, String> basicHeaderInfo() {
   return {
     HttpHeaders.acceptHeader: "application/json",
     HttpHeaders.contentTypeHeader: "application/json",
-    
+
   };
 }
 
@@ -39,12 +39,12 @@ class ApiMethod {
 
   // Get method
   Future<Map<String, dynamic>?> get(
-    String url, {
-    int code = 200,
-    int duration = 120,
-    bool showResult = false,
-    bool showErrorMessage = true,
-  }) async {
+      String url, {
+        int code = 200,
+        int duration = 120,
+        bool showResult = false,
+        bool showErrorMessage = true,
+      }) async {
     log.i(
         '|📍📍📍|----------------- [[ GET ]] method details start -----------------|📍📍📍|');
     log.i(url);
@@ -54,9 +54,9 @@ class ApiMethod {
     try {
       final response = await http
           .get(
-            Uri.parse(url),
-            headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
-          )
+        Uri.parse(url),
+        headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
+      )
           .timeout(Duration(seconds: duration));
 
       log.i(
@@ -140,13 +140,13 @@ class ApiMethod {
 
   // Post Method
   Future<Map<String, dynamic>?> post(
-    String url,
-    Map<String, dynamic> body, {
-    int code = 201,
-    int duration = 120,
-    bool showResult = false,
-    bool showErrorMessage = true,
-  }) async {
+      String url,
+      Map<String, dynamic> body, {
+        int code = 201,
+        int duration = 120,
+        bool showResult = false,
+        bool showErrorMessage = true,
+      }) async {
     try {
       log.i(
           '|📍📍📍|-----------------[[ POST ]] method details start -----------------|📍📍📍|');
@@ -160,10 +160,10 @@ class ApiMethod {
 
       final response = await http
           .post(
-            Uri.parse(url),
-            body: jsonEncode(body),
-            headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
-          )
+        Uri.parse(url),
+        body: jsonEncode(body),
+        headers: isBasic ? basicHeaderInfo() : await bearerHeaderInfo(),
+      )
           .timeout(Duration(seconds: duration));
 
       log.i(
@@ -343,13 +343,13 @@ class ApiMethod {
 
   // multipart multi file Method
   Future<Map<String, dynamic>?> multipartMultiFile(
-    String url,
-    Map<String, String> body, {
-    int code = 200,
-    bool showResult = false,
-    required List<String> pathList,
-    required List<String> fieldList,
-  }) async {
+      String url,
+      Map<String, String> body, {
+        int code = 200,
+        bool showResult = false,
+        required List<String> pathList,
+        required List<String> fieldList,
+      }) async {
     try {
       log.i(
           '|📍📍📍|-----------------[[ Multipart ]] method details start -----------------|📍📍📍|');
@@ -456,7 +456,7 @@ class ApiMethod {
     if (isMaintenance) {
       controller.maintenanceStatus.value = true;
       MaintenanceModel maintenanceModel =
-          MaintenanceModel.fromJson(jsonDecode(jsonData));
+      MaintenanceModel.fromJson(jsonDecode(jsonData));
       MaintenanceDialog().show(maintenanceModel: maintenanceModel);
     } else {
       controller.maintenanceStatus.value = false;

@@ -40,6 +40,7 @@ class CartDatum {
   String id;
   String name;
   String price;
+  String? purchase_limit;
   String mainPrice;
   String? shipmentType;
   String? offerPrice;
@@ -51,6 +52,7 @@ class CartDatum {
     required this.id,
     required this.name,
     required this.price,
+    this.purchase_limit,
     required this.mainPrice,
     required this.shipmentType,
     required this.offerPrice,
@@ -63,6 +65,7 @@ class CartDatum {
         id: json["id"],
         name: json["name"],
         price: json["price"],
+        purchase_limit: json["purchase_limit"],
         mainPrice: json["main_price"],
         shipmentType: json["shipment_type"],
         offerPrice: json["offer_price"] ?? "0.00",
@@ -77,6 +80,7 @@ class CartDatum {
         "id": id,
         "name": name,
         "price": price,
+        "purchase_limit": purchase_limit,
         "main_price": mainPrice,
         "shipment_type": shipmentType,
         "offer_price": offerPrice,
@@ -89,6 +93,7 @@ class CartDatum {
       id: map["id"],
       name: map["name"],
       price: map["price"],
+      purchase_limit: map["purchase_limit"],
       mainPrice: map["main_price"],
       shipmentType: map["shipment_type"],
       offerPrice: map["offer_price"],

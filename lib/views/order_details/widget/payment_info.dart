@@ -25,11 +25,11 @@ class PaymentInfo extends GetView<OrderDetailsController> {
               fontWeight: FontWeight.w500,
             ),
             DividerWidget(),
-            DoubleSideTextWidget(
-              keys: Strings.paymentMethod,
-              value: controller.paymentMethod.value,
-            ),
-            Sizes.height.v5,
+            // DoubleSideTextWidget(
+            //   keys: Strings.paymentMethod,
+            //   value: controller.paymentMethod.value,
+            // ),
+            // Sizes.height.v5,
             DoubleSideTextWidget(
               keys: Strings.transactionId,
               value: controller.transactionID.value,

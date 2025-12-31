@@ -108,6 +108,12 @@ class RoutePageList {
       page: () => const ForgotPinScreen(),
       binding: ForgotPinBinding(),
     ),
+
+    GetPage(
+      name: Routes.forgotPasswordScreen,
+      page: () => const ForgotPinScreen(),
+      binding: ForgotPinBinding(),
+    ),
     
     GetPage(
       name: Routes.loginScreen,
