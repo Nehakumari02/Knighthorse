@@ -43,7 +43,7 @@ class SpecialOfferProduct extends GetView<DashboardController> {
 
   _specialProductList() {
     return SizedBox(
-        height: 180.h,
+        height: 250.h,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: controller.specialProductsList.length > 5
@@ -145,8 +145,8 @@ class SpecialOfferProduct extends GetView<DashboardController> {
       flex: 3,
       child: Padding(
         padding: EdgeInsets.only(
-            left: Dimensions.horizontalSize * 0.7,
-            right: Dimensions.horizontalSize * 0.7,
+            left: Dimensions.horizontalSize * 0.4,
+            right: Dimensions.horizontalSize * 0.4,
             top: Dimensions.heightSize * .5),
         child: Column(
           crossAxisAlignment: crossStart,
@@ -260,6 +260,7 @@ class SpecialOfferProduct extends GetView<DashboardController> {
               image: product.image,
               shipmentType: product.shipment.id.toString(),
               mainPrice: product.price,
+              purchaseLimit: product.purchaseLimit ?? 1000,
               quantity: cartController.itemQuantity.value,
               availableQuantity: product.availableQuantity));
         }

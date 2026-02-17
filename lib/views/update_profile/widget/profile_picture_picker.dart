@@ -54,27 +54,27 @@ class ProfilePicturePicker extends StatelessWidget {
               ),
             ),
           ),
-          Positioned(
-            bottom: 17,
-            right: 8,
-            child: InkWell(
-              onTap: () {
-                showModalBottomSheet(
-                  context: context,
-                  builder: (context) => _imagePickerBottomSheetWidget(context),
-                );
-              },
-              child: CircleAvatar(
-                backgroundColor: CustomColor.whiteColor,
-                radius: Dimensions.radius * 1.3,
-                child: Icon(
-                  Icons.photo_camera,
-                  color: CustomColor.disableColor,
-                  size: Dimensions.iconSizeDefault * 0.8,
-                ),
-              ),
-            ),
-          ),
+          // Positioned(
+          //   bottom: 17,
+          //   right: 8,
+          //   child: InkWell(
+          //     onTap: () {
+          //       showModalBottomSheet(
+          //         context: context,
+          //         builder: (context) => _imagePickerBottomSheetWidget(context),
+          //       );
+          //     },
+          //     child: CircleAvatar(
+          //       backgroundColor: CustomColor.whiteColor,
+          //       radius: Dimensions.radius * 1.3,
+          //       child: Icon(
+          //         Icons.photo_camera,
+          //         color: CustomColor.disableColor,
+          //         size: Dimensions.iconSizeDefault * 0.8,
+          //       ),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

@@ -39,122 +39,154 @@ class RegInputField extends GetView<RegistrationController> {
           ],
         ),
         Sizes.height.betweenInputBox,
-// --- Country, Mobile & Send OTP (Single Row) ---
+// --- Country Dropdown & Mobile Number (Side by Side) ---
         Row(
-          crossAxisAlignment: CrossAxisAlignment.end, // Aligns button with the bottom of input fields
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            // 1. Country Code
+            // 1. Country Selection Dropdown
             Expanded(
-              flex: 2,
-              child: _inputBoxWidget(
-                "Code",
-                "+91",
-                controller.countryController,
-                removeEnter: true,
-                textInputType: TextInputType.phone,
+              flex: 3,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextWidget("Country", typographyStyle: TypographyStyle.labelSmall),
+                  Sizes.height.v5,
+                  _countryDropdown(),
+                ],
               ),
             ),
-            Sizes.width.v5, // Smaller gap
+            Sizes.width.v10,
 
-            // 2. Mobile Number
+            // 2. Mobile Number Input
             Expanded(
               flex: 5,
               child: _inputBoxWidget(
                 "Mobile Number",
-                "Number",
+                "Enter Number",
                 controller.mobileNumberController,
                 textInputType: TextInputType.phone,
                 removeEnter: true,
               ),
             ),
-            Sizes.width.v5, // Smaller gap
-
-            // 3. Send OTP Button
-            Expanded(
-              flex: 3,
-              child: Obx(() {
-                // Logic for Button Text
-                String buttonText = "Send OTP";
-                if (controller.timerCount.value > 0) {
-                  buttonText = "Wait ${controller.timerCount.value}s";
-                } else if (controller.isOtpSent.value) {
-                  buttonText = "Resend";
-                }
-
-                return GestureDetector(
-                  onTap: () {
-                    if (controller.timerCount.value == 0) {
-                      controller.sendOtp();
-                    }
-                  },
-                  child: Container(
-                    height: 50, // Fixed height to match Input Box height
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: controller.timerCount.value > 0
-                          ? Colors.grey
-                          : CustomColor.primary,
-                      borderRadius: BorderRadius.circular(Dimensions.radius),
-                    ),
-                    child: TextWidget(
-                      buttonText,
-                      color: Colors.white,
-
-                    ),
-                  ),
-                );
-              }),
-            ),
           ],
         ),
         Sizes.height.betweenInputBox,
-// --- OTP Field + Verify Button (Side by Side) ---
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.end, // Aligns button with input box, not label
-          children: [
-            Expanded(
-              child: _inputBoxWidget(
-                "OTP",
-                "Enter OTP",
-                controller.otpController,
-                textInputType: TextInputType.number,
-                removeEnter: true, // Helps alignment
-              ),
-            ),
-            Sizes.width.v10,
-
-            // Verify Button
-            Obx(() {
-              bool isVerified = controller.isOtpVerified.value; // Uses the boolean we added
-
-              return GestureDetector(
-                onTap: () {
-                  if (!isVerified) {
-                    controller.verifyOtp();
-                  }
-                },
-                child: Container(
-                  height: 50, // Match height of input box approximately
-                  alignment: Alignment.center,
-                  padding: EdgeInsets.symmetric(
-                    horizontal: Dimensions.paddingSize,
-                  ),
-                  decoration: BoxDecoration(
-                    color: isVerified ? Colors.green : CustomColor.primary,
-                    borderRadius: BorderRadius.circular(Dimensions.radius),
-                  ),
-                  child: isVerified
-                      ? Icon(Icons.check, color: Colors.white)
-                      : TextWidget(
-                    "Verify",
-                    color: Colors.white,
-
-                  ),
-                ),
-              );
-            }),
-          ],
-        ),
+// // --- Country, Mobile & Send OTP (Single Row) ---
+//         Row(
+//           crossAxisAlignment: CrossAxisAlignment.end, // Aligns button with the bottom of input fields
+//           children: [
+//             // 1. Country Code
+//             Expanded(
+//               flex: 2,
+//               child: _inputBoxWidget(
+//                 "Code",
+//                 "+91",
+//                 controller.countryController,
+//                 removeEnter: true,
+//                 textInputType: TextInputType.phone,
+//               ),
+//             ),
+//             Sizes.width.v5, // Smaller gap
+//
+//             // 2. Mobile Number
+//             Expanded(
+//               flex: 5,
+//               child: _inputBoxWidget(
+//                 "Mobile Number",
+//                 "Number",
+//                 controller.mobileNumberController,
+//                 textInputType: TextInputType.phone,
+//                 removeEnter: true,
+//               ),
+//             ),
+//             Sizes.width.v5, // Smaller gap
+//
+//             // 3. Send OTP Button
+//             Expanded(
+//               flex: 3,
+//               child: Obx(() {
+//                 // Logic for Button Text
+//                 String buttonText = "Send OTP";
+//                 if (controller.timerCount.value > 0) {
+//                   buttonText = "Wait ${controller.timerCount.value}s";
+//                 } else if (controller.isOtpSent.value) {
+//                   buttonText = "Resend";
+//                 }
+//
+//                 return GestureDetector(
+//                   onTap: () {
+//                     if (controller.timerCount.value == 0) {
+//                       controller.sendOtp();
+//                     }
+//                   },
+//                   child: Container(
+//                     height: 50, // Fixed height to match Input Box height
+//                     alignment: Alignment.center,
+//                     decoration: BoxDecoration(
+//                       color: controller.timerCount.value > 0
+//                           ? Colors.grey
+//                           : CustomColor.primary,
+//                       borderRadius: BorderRadius.circular(Dimensions.radius),
+//                     ),
+//                     child: TextWidget(
+//                       buttonText,
+//                       color: Colors.white,
+//
+//                     ),
+//                   ),
+//                 );
+//               }),
+//             ),
+//           ],
+//         ),
+//         Sizes.height.betweenInputBox,
+// // --- OTP Field + Verify Button (Side by Side) ---
+//         Row(
+//           crossAxisAlignment: CrossAxisAlignment.end, // Aligns button with input box, not label
+//           children: [
+//             Expanded(
+//               child: _inputBoxWidget(
+//                 "OTP",
+//                 "Enter OTP",
+//                 controller.otpController,
+//                 textInputType: TextInputType.number,
+//                 removeEnter: true, // Helps alignment
+//               ),
+//             ),
+//             Sizes.width.v10,
+//
+//             // Verify Button
+//             Obx(() {
+//               bool isVerified = controller.isOtpVerified.value; // Uses the boolean we added
+//
+//               return GestureDetector(
+//                 onTap: () {
+//                   if (!isVerified) {
+//                     controller.verifyOtp();
+//                   }
+//                 },
+//                 child: Container(
+//                   height: 50, // Match height of input box approximately
+//                   alignment: Alignment.center,
+//                   padding: EdgeInsets.symmetric(
+//                     horizontal: Dimensions.paddingSize,
+//                   ),
+//                   decoration: BoxDecoration(
+//                     color: isVerified ? Colors.green : CustomColor.primary,
+//                     borderRadius: BorderRadius.circular(Dimensions.radius),
+//                   ),
+//                   child: isVerified
+//                       ? Icon(Icons.check, color: Colors.white)
+//                       : TextWidget(
+//                     "Verify",
+//                     color: Colors.white,
+//
+//                   ),
+//                 ),
+//               );
+//             }),
+//           ],
+//         ),
         Sizes.height.betweenInputBox,
         Row(
           children: [
@@ -216,6 +248,40 @@ class RegInputField extends GetView<RegistrationController> {
   // ... (Keep your existing _inputBoxWidget function here)
 
   // VVV  ADD THIS MISSING FUNCTION VVV
+
+  // Add this missing function
+  Widget _countryDropdown() {
+    return Obx(() => Container(
+      height: 50,
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.grey.shade300),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<String>(
+          isExpanded: true,
+          // This allows the user to see more items at once
+          menuMaxHeight: 150,
+          value: controller.selectedCountryCode.value,
+          items: controller.countryList.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: TextWidget(value),
+            );
+          }).toList(),
+          onChanged: (newValue) {
+            if (newValue != null) {
+              controller.selectedCountryCode.value = newValue;
+              // Call the now-public method
+              controller.updateFormValidity();
+            }
+          },
+        ),
+      ),
+    ));
+  }
+
 
   Widget _buildRadioOption({required String title, required String value}) {
     return Expanded(

@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import '../../../../base/utils/basic_import.dart';
 import '../../../../base/utils/local_storage.dart';
 import '../../../../routes/routes.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
+
 import '../controller/registration_controller.dart';
 part 'registration_tablet_screen.dart';
 part 'registration_mobile_screen.dart';

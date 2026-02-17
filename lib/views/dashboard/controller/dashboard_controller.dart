@@ -11,12 +11,16 @@ import '../model/area_model.dart';
 import '../model/banner_offer_model.dart';
 import '../model/popular_product_model.dart';
 import '../../update_profile/model/profile_info_model.dart';
+import '../../all_product_list/screen/all_product_list_screen.dart';
 // Change the old import to this:
 import '../model/featured_category_model.dart';
 class DashboardController extends GetxController {
 
   // Store the Logged In User Type
   var fetchedUserType = "".obs;
+  // Inside DashboardController class
+  var isLastAllProductPage = false.obs; // Prevents API calls when end of list reached
+  final _isLoadMoreLoading = false.obs; // Controls the bottom spinner during scroll
 
 
   @override
@@ -33,6 +37,14 @@ class DashboardController extends GetxController {
     _offerProductPagination();
     super.onInit();
   }
+  void loadMoreAllProducts() {
+    // ✅ isAllProductLoading is a bool getter, so no .value needed
+    if (isAllProductLoading || isLastAllProductPage.value) return;
+
+    debugPrint("🔄 Loading Page: ${page.value + 1}");
+    page.value++;
+    getAllProducts();
+  }
 
 
 // ==========================================
@@ -45,7 +57,7 @@ class DashboardController extends GetxController {
   // Private list (stores original data from API)
   List<FeaturedCategory> _rawFeaturedList = [];
 
-  var isFeaturedLoading = false.obs;
+  var isFeaturedLoading = true.obs;
 
   void fetchFeaturedCategories() async {
     isFeaturedLoading.value = true;
@@ -266,7 +278,7 @@ class DashboardController extends GetxController {
   RxList<Product> offerProducts = <Product>[].obs;
   var bannerImageIndex = 0.obs;
   RxList<OfferBanner> bannerImages = <OfferBanner>[].obs;
-  final _isBannerOfferLoading = false.obs;
+  final _isBannerOfferLoading = true.obs;
   bool get isBannerOfferLoading => _isBannerOfferLoading.value;
   late BannerOfferModel _bannerOfferModel;
   BannerOfferModel get bannerOfferModel => _bannerOfferModel;
@@ -294,7 +306,7 @@ class DashboardController extends GetxController {
   var isLastPage = false.obs;
   Rxn<Product> selectedPopularProduct = Rxn();
   RxList<Product> popularProductsList = <Product>[].obs;
-  final _isPopularLoading = false.obs;
+  final _isPopularLoading = true.obs;
   bool get isPopularLoading => _isPopularLoading.value;
   late PopularProductModel _popularProductModel;
   PopularProductModel get popularProductModel => _popularProductModel;
@@ -349,7 +361,7 @@ class DashboardController extends GetxController {
   // ALL PRODUCTS SECTION
   // ==========================================
   RxList<Product> allProductList = <Product>[].obs;
-  final _isAllProductLoading = false.obs;
+  final _isAllProductLoading = true.obs;
   bool get isAllProductLoading => _isAllProductLoading.value;
 
   // 👇 ADD THESE VARIABLES FOR FILTERING
@@ -359,29 +371,63 @@ class DashboardController extends GetxController {
   var currentRangeValues = const RangeValues(0, 10000).obs;
 
   Future<void> getAllProducts() async {
-    if(fetchedUserType.value.isEmpty) return;
-    _isAllProductLoading.value = true;
+    if (fetchedUserType.value.isEmpty) return;
 
-    // NOTE: Ensure ApiEndpoint.allProductList is defined in your constants file
+    bool isFirstPage = (page.value == 1);
+
+    // Set loading states
+    if (isFirstPage) {
+      _isAllProductLoading.value = true;
+    } else {
+      _isLoadMoreLoading.value = true;
+    }
+
     Map<String, dynamic> inputBody = {
-      "page": 1,
-      "limit": 100,
-      "sort_direction": "asc",
+      "page": page.value,
+      "limit": 10,
+      "sort_direction": "desc",
+      // Optional: send user_type to server anyway to encourage backend fix
+      "user_type": fetchedUserType.value.toLowerCase().trim(),
     };
 
-    await RequestProcess().request(
-      fromJson: PopularProductModel.fromJson,
-      apiEndpoint: ApiEndpoint.allProductList,
-      isLoading: _isAllProductLoading,
-      body: inputBody,
-      isBasic: true,
-      method: HttpMethod.POST,
-      onSuccess: (value) {
-        var model = value as PopularProductModel;
-        _setAllProductsData(model);
-      },
-    );
+    await RequestProcess().request<PopularProductModel>(
+        apiEndpoint: ApiEndpoint.allProductList,
+        fromJson: PopularProductModel.fromJson,
+        method: HttpMethod.POST,
+        body: inputBody,
+        isBasic: true,
+        isLoading: false.obs,
+        onSuccess: (response) {
+          if (response != null) {
+            if (isFirstPage) allProductList.clear();
+
+            // 1. STRICTURE FILTER: Manual separation because server is not doing it
+            String myType = fetchedUserType.value.toLowerCase().trim();
+            List<Product> strictlyFiltered = response.data.product.where((product) {
+              String pType = product.userType?.toLowerCase().trim() ?? "";
+              return pType == myType;
+            }).toList();
+
+            // 2. Add only the correct products to the list
+            allProductList.addAll(strictlyFiltered);
+
+            // 3. Pagination Check (Check total response, not filtered list)
+            if (response.data.product.length < 10) {
+              isLastAllProductPage.value = true;
+            }
+
+            // 4. AUTO-FETCH: If all 10 items were filtered out, get next page automatically
+            if (strictlyFiltered.isEmpty && !isLastAllProductPage.value) {
+              page.value++;
+              getAllProducts();
+            }
+
+            initializeFilter(); // Sync the price filter list
+          }
+        });
+
     _isAllProductLoading.value = false;
+    _isLoadMoreLoading.value = false;
   }
 
   _setAllProductsData(PopularProductModel model) {

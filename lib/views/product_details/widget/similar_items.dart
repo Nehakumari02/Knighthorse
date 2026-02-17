@@ -31,7 +31,7 @@ class SimilarItems extends GetView<DetailsController> {
 
   _similarProductList() {
     return SizedBox(
-        height: 200.h,
+        height: 280.h,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: controller.similarProduct.length,

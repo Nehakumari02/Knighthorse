@@ -41,9 +41,9 @@ class CategorySection extends GetView<DashboardController> {
                         curve: Curves.easeInOut,
                         child: GridView.count(
                           key: ValueKey(isExpanded),
-                          crossAxisCount: 4,
+                          crossAxisCount: 3,
                           shrinkWrap: true,
-                          childAspectRatio: 0.9,
+                          childAspectRatio: 0.76,
                           mainAxisSpacing: Dimensions.heightSize,
                           physics: NeverScrollableScrollPhysics(),
                           children: List.generate(visibleItemCount, (index) {
@@ -85,7 +85,7 @@ class CategorySection extends GetView<DashboardController> {
         onTap: () {
           categoriesData.categoryScrollIndex.value = index;
           categoriesData.selelctedCategory.value =
-              categoriesData.categories[index];
+          categoriesData.categories[index];
           Get.find<NavigationController>().selectedIndex.value = 1;
           Routes.navigation.toNamed;
         },
@@ -93,25 +93,33 @@ class CategorySection extends GetView<DashboardController> {
           mainAxisSize: mainMin,
           mainAxisAlignment: mainStart,
           children: [
+            // --- SQUARE CONTAINER REPLACING CIRCLE ---
             Container(
-              padding: EdgeInsets.all(Dimensions.radius * 1.3),
+              height: Dimensions.heightSize * 6, // Fixed Height for uniform squares
+              width: Dimensions.heightSize * 6,  // Fixed Width
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
+                // Removed BoxShape.circle
+                borderRadius: BorderRadius.circular(Dimensions.radius),
                 color: CustomColor.primary.withValues(alpha: 0.06),
               ),
-              child: CircleAvatar(
-                radius: Dimensions.radius * 1.2,
-                backgroundColor: CustomColor.primary.withOpacity(0.05),
-                child:
-                    Image.network("${categoriesData.imagePath.value}${image}"),
+              // ClipRRect ensures the image corners match the container corners
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(Dimensions.radius),
+                child: Image.network(
+                  "${categoriesData.imagePath.value}${image}",
+                  fit: BoxFit.cover, // Ensures no stretching and fills the square
+                  errorBuilder: (context, error, stackTrace) =>
+                      Icon(Icons.category, color: CustomColor.primary),
+                ),
               ),
             ),
             Sizes.height.v5,
             Flexible(
               child: TextWidget(
                 label,
-                typographyStyle: TypographyStyle.labelMedium,
-                lineHeight: 1,
+                // Adjusted to match your subcategory font preference
+                fontSize: Dimensions.labelSmall * 0.85,
+                lineHeight: 1.1,
                 fontWeight: FontWeight.w400,
                 textAlign: TextAlign.center,
                 padding: EdgeInsets.symmetric(
@@ -121,5 +129,4 @@ class CategorySection extends GetView<DashboardController> {
             ),
           ],
         ));
-  }
-}
+  }}

@@ -25,14 +25,14 @@ class ListTileWidget extends GetView<ProfileController> {
                 text: Strings.yourOrders,
                 leadingIcon: Icons.policy_outlined,
               ),
-            if (LocalStorage.isLoggedIn)
-              CustomTiles(
-                onTap: () {
-                  Routes.paymentHistoryScreen.toNamed;
-                },
-                text: Strings.paymentHistory,
-                leadingIcon: Icons.info_outline_rounded,
-              ),
+            // if (LocalStorage.isLoggedIn)
+            //   CustomTiles(
+            //     onTap: () {
+            //       Routes.paymentHistoryScreen.toNamed;
+            //     },
+            //     text: Strings.paymentHistory,
+            //     leadingIcon: Icons.info_outline_rounded,
+            //   ),
             if (LocalStorage.isLoggedIn)
               CustomTiles(
                 onTap: () {

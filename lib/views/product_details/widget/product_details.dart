@@ -32,7 +32,7 @@ class ProductDetails extends GetView<DetailsController> {
             child: Image.network(
               "${controller.imagePath}$imgToDisplay",
               width: double.infinity,
-              height: 200.h,
+              height: 280.h,
               fit: BoxFit.contain,
               errorBuilder: (context, error, stackTrace) =>
               const Icon(Icons.image_not_supported, size: 50),
@@ -99,12 +99,13 @@ class ProductDetails extends GetView<DetailsController> {
                         color: CustomColor.primary,
                         fontWeight: FontWeight.w700,
                       )),
-                  Obx(() => controller.hasAdded
+                  Obx(() => controller.isProductInCart()
                       ? QuantityWidget(
                     productId:
                     controller.selectedProduct.value!.id.toString(),
                   )
                       : Quantity())
+
                 ],
               ),
               _productDetails()

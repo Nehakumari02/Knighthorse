@@ -41,7 +41,7 @@ class ProductCard extends GetView<DashboardController> {
   _imageWidget() {
     final outOfStock = product.availableQuantity == "0";
     return Expanded(
-      flex: 2,
+      flex: 3,
       child: GestureDetector(
         onTap: outOfStock ? null : onTap,
         child: Container(
@@ -75,7 +75,7 @@ class ProductCard extends GetView<DashboardController> {
   _productData(bool hasOffer) {
     final outOfStock = product.availableQuantity == "0";
     return Expanded(
-      flex: 3,
+      flex: 2,
       child: Padding(
         padding: EdgeInsets.only(
             left: Dimensions.horizontalSize * 0.7,
@@ -184,6 +184,7 @@ class ProductCard extends GetView<DashboardController> {
               name: product.data.name,
               price: product.price,
               offerPrice: product.offerPrice,
+              purchaseLimit: product.purchaseLimit ?? 0,
               image: product.image,
               shipmentType: product.shipment.id.toString(),
               mainPrice: product.price,

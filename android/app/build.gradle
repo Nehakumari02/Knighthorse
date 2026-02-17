@@ -26,6 +26,17 @@ android {
     namespace = "com.knighthorse.knighthorse"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion = "27.0.12077973" // Add this line
+
+    // 1. Add the signingConfigs block with your actual values
+    signingConfigs {
+        release {
+            // Using the values we verified in your terminal
+            storeFile file("../upload-keystore.jks")
+            storePassword "Knighthorse@123"
+            keyAlias "upload"
+            keyPassword "Knighthorse@123"
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8  
         targetCompatibility = JavaVersion.VERSION_1_8  
@@ -41,26 +52,51 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
+
+        // ADD THIS BLOCK BELOW
+        externalNativeBuild {
+            cmake {
+                // Forces 16 KB page alignment for NDK 27
+                arguments "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
+            }
+        }
+
+
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a", "x86", "x86_64"
+        }
+
+        // ADD THIS PACKAGING BLOCK
+        packagingOptions {
+            jniLibs {
+                // Required so that the OS can read the 16KB-aligned libs directly
+                useLegacyPackaging = false
+            }
+        }
     }
 
     buildTypes {
         release {
-      
-            signingConfig = signingConfigs.debug
+            // This is the correct single layer
+            signingConfig = signingConfigs.release
+
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
-    }
+    } // This closing brace for buildTypes was likely missing or misplaced
     aaptOptions {
         noCompress "tflite" 
     }
 }
 
 dependencies {
-    // Add language package you need to use
     implementation 'com.google.android.gms:play-services-auth:20.5.0'
-    implementation 'com.google.mlkit:text-recognition-chinese:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-japanese:16.0.0'
-    implementation 'com.google.mlkit:text-recognition-korean:16.0.0'
+    // Updated versions for 16 KB support
+    implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-devanagari:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-japanese:16.0.1'
+    implementation 'com.google.mlkit:text-recognition-korean:16.0.1'
 }
 
 flutter {

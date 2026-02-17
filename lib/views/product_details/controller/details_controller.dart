@@ -13,8 +13,18 @@ class DetailsController extends GetxController {
   Rxn<Product> selectedProduct = Rxn();
   var currentImage = "".obs;
   late int selectedProductId;
-  CartController? cartController = Get.put(CartController());
-  RxInt get quantity => cartController?.itemQuantity ?? 1.obs;
+  late CartController cartController;
+  bool isProductInCart() {
+    if (selectedProduct.value == null) return false;
+
+    return cartController.cartItems.any(
+          (item) => item.id == selectedProduct.value!.id.toString(),
+    );
+  }
+
+
+  RxInt get quantity => cartController.itemQuantity;
+
 
   final imagePath =
       "${BasicServices.basePath.value}/${BasicServices.productPathLocation.value}/";
@@ -22,13 +32,14 @@ class DetailsController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    cartController = Get.find<CartController>(); // 👈 IMPORTANT
     final args = Get.arguments;
     selectedProductId = args['productId'];
     getProductDetails(selectedProductId);
   }
 
-  var _hasAdded = false.obs;
-  bool get hasAdded => _hasAdded.value;
+  // var _hasAdded = false.obs;
+  // bool get hasAdded => _hasAdded.value;
 
   void incrementQuantity() {
     quantity.value++;
@@ -61,10 +72,12 @@ class DetailsController extends GetxController {
           _detailsModel = value!;
           selectedProduct.value = _detailsModel.data.product;
           currentImage.value = selectedProduct.value!.image;
-          if (LocalStorage.isLoggedIn) {
-            _hasAdded.value = cartController!.cartItems
-                .any((item) => item.id == selectedProduct.value!.id.toString());
-          }
+          // ✅ RESET ONLY WHEN PRODUCT LOADS
+          cartController!.itemQuantity.value = 1;
+          // if (LocalStorage.isLoggedIn) {
+          //   _hasAdded.value = cartController!.cartItems
+          //       .any((item) => item.id == selectedProduct.value!.id.toString());
+          // }
           ;
           _setItems();
         });

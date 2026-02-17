@@ -41,10 +41,12 @@ class DetailsMobileScreen extends GetView<DetailsController> {
             child: Obx(() {
               return PrimaryButton(
                 title: outOfStock ? Strings.outOfStock : Strings.addToCart,
-                disable: controller.hasAdded || outOfStock,
+                disable: controller.isProductInCart() || outOfStock,
+
                 // isLoading: Get.find<CartController>().isAddingToCart,
                 onPressed: () {
-                  if (!controller.hasAdded) {
+                  if (!controller.isProductInCart()) {
+
                     Get.find<CartController>().addToCart(CartDatum(
                         id: controller.selectedProduct.value!.id.toString(),
                         name: controller.selectedProduct.value!.data.name,
@@ -56,7 +58,10 @@ class DetailsMobileScreen extends GetView<DetailsController> {
                         image: controller.selectedProduct.value!.image,
                         offerPrice:
                             controller.selectedProduct.value!.offerPrice,
-                        quantity: controller.cartController!.itemQuantity.value,
+                        purchaseLimit:
+                        controller.selectedProduct.value!.purchaseLimit,
+                        quantity: controller.quantity.value,
+
                         availableQuantity: controller
                             .selectedProduct.value!.availableQuantity));
                   } else {

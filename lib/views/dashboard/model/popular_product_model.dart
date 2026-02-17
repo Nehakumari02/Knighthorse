@@ -49,6 +49,7 @@ class Product {
     ProductData data;
     String price;
     String? offerPrice;
+    int? purchaseLimit; // <--- 1. ADD THIS VARIABLE
     String uuid;
     int quantity;
     String availableQuantity;
@@ -73,6 +74,7 @@ class Product {
         required this.data,
         required this.price,
         required this.offerPrice,
+        this.purchaseLimit, // <--- 2. ADD TO CONSTRUCTOR
         required this.uuid,
         required this.quantity,
         required this.availableQuantity,
@@ -95,6 +97,7 @@ class Product {
         id: json["id"],
         categoryId: json['category_id'], // <--- ADD THIS
         userType: json['user_type'],     // <--- ADD THIS
+        purchaseLimit: json['purchase_limit'], // <--- 3. MAP FROM JSON
         data: ProductData.fromJson(json["data"]),
         price: json["price"],
         offerPrice: json["offer_price"] ?? "0.0",

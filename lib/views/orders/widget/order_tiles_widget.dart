@@ -45,7 +45,7 @@ class OrderTilesWidget extends GetView<OrdersController> {
                   //   "${Strings.deliveryDate}: ${data.date}",
                   //   typographyStyle: TypographyStyle.labelSmall,
                   // ),
-                  TextWidget("${data.amount} ${data.defaultCurrencyCode}"),
+                  // TextWidget("${data.amount} ${data.defaultCurrencyCode}"),
                 ],
               ),
             ],

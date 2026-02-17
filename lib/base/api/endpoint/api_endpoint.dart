@@ -1,7 +1,9 @@
 import 'package:dynamic_languages/dynamic_languages.dart';
 
 class ApiConfig {
-  static const String mainDomain = "https://thebudgetpe.com/demo/Knighthorse/app";
+  static const String mainDomain = "https://admin.knighthorse.in";
+  // static const String mainDomain = "https://thebudgetpe.com/demo/Knighthorse/app";
+
   // static const String mainDomain = "http://192.168.1.113:8000";
 
   static const String baseUrl = "$mainDomain/api/v1";

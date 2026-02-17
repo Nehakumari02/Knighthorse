@@ -194,6 +194,8 @@ class OrderShipment {
   int shipmentId;
   int userId;
   String trackingNumber;
+  String? trackingLink;    // 👈 Changed to Nullable (No 'required')
+  String? courierCompany;  // 👈 Changed to Nullable (No 'required')
   String startTime;
   String endTime;
   DateTime deliveryDate;
@@ -208,6 +210,8 @@ class OrderShipment {
     required this.shipmentId,
     required this.userId,
     required this.trackingNumber,
+    this.trackingLink,    // 👈 Removed 'required'
+    this.courierCompany,  // 👈 Removed 'required'
     required this.startTime,
     required this.endTime,
     required this.deliveryDate,
@@ -223,6 +227,8 @@ class OrderShipment {
     shipmentId: json["shipment_id"],
     userId: json["user_id"],
     trackingNumber: json["tracking_number"] ?? "",
+    trackingLink: json["tracking_link"],     // 👈 Directly assigned (can be null)
+    courierCompany: json["courier_company"], // 👈 Directly assigned (can be null)
     startTime: json["start_time"] ?? "",
     endTime: json["end_time"] ?? "",
     deliveryDate: DateTime.parse(json["delivery_date"]),

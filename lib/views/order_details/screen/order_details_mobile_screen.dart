@@ -43,7 +43,7 @@ class OrderDetailsMobileScreen extends GetView<OrderDetailsController> {
         ),
         children: [
           ProductDetails(),
-          BillingSummary(),
+          // BillingSummary(),
           ShipmentInfo(),
           DelivaryInfo(),
           PaymentInfo()

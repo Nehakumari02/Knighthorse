@@ -13,6 +13,9 @@ import '../../../base/api/services/basic_services.dart';
 import '../../orders/controller/orders_controller.dart';
 import '../model/order_details_model.dart';
 import '../../update_profile/model/profile_info_model.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+
 
 class OrderDetailsController extends GetxController {
   @override
@@ -27,6 +30,8 @@ class OrderDetailsController extends GetxController {
   var username = "".obs; // 👈 1. ADDED USERNAME OBSERVABLE
 
   var trackingNumber = "".obs;
+  var courierCompany = "".obs; // 👈 NEW
+  var trackingLink = "".obs;    // 👈 NEW
   var deliveryDate = "".obs;
   var deliveryTime = "".obs;
   var shippingMethod = "".obs;
@@ -56,6 +61,33 @@ class OrderDetailsController extends GetxController {
   bool get isLoading => _isLoading.value;
   late OrderDetailsModel _orderDetailsModel;
   OrderDetailsModel get orderDetailsModel => _orderDetailsModel;
+
+  Future<void> launchTrackingUrl() async {
+    // 1. Get the value from the observable
+    String urlString = trackingLink.value.trim();
+
+    // 2. Check if it's empty or invalid before trying to launch
+    if (urlString.isEmpty || urlString == "Not Available") {
+      debugPrint("No valid tracking link found.");
+      return;
+    }
+
+    // 3. Ensure the URL has a scheme (https://)
+    if (!urlString.startsWith("http")) {
+      urlString = "https://$urlString";
+    }
+
+    final Uri url = Uri.parse(urlString);
+
+    try {
+      // 4. Launch in an external browser
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        debugPrint("Could not launch $url");
+      }
+    } catch (e) {
+      debugPrint("Error launching tracking URL: $e");
+    }
+  }
 
   // ==========================================
   // 1. FETCH USER TYPE & USERNAME
@@ -127,12 +159,17 @@ class OrderDetailsController extends GetxController {
   _setShipmentData() {
     if (_orderDetailsModel.data.transaction.orderShipment.isEmpty) {
       trackingNumber.value = "N/A";
+      courierCompany.value = "N/A"; // 👈 NEW
+      trackingLink.value = "";     // 👈 NEW
       shippingMethod.value = "N/A";
       return;
     }
 
     var data = _orderDetailsModel.data.transaction.orderShipment.first;
     trackingNumber.value = data.trackingNumber;
+    // 👇 NEW: Map the new fields from your updated model
+    courierCompany.value = data.courierCompany ?? "N/A";
+    trackingLink.value = data.trackingLink ?? "";
     deliveryDate.value = DateFormat("yyyy-MM-dd").format(data.deliveryDate);
     deliveryTime.value = "${data.startTime}-${data.endTime}";
 

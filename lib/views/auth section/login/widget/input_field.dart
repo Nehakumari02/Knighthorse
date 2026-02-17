@@ -9,7 +9,7 @@ class InputField extends GetView<LoginController> {
       padding: EdgeInsets.only(top: Dimensions.verticalSize * .5),
       child: Column(
         children: [
-          _methodSelection(),
+          // _methodSelection(),
           _inputField(),
           _isforgotPin(context),
         ],

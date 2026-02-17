@@ -34,7 +34,8 @@ class CartDatabaseHelper {
             offer_price TEXT,
             image TEXT,
             quantity INTEGER,
-            available_quantity TEXT
+            available_quantity TEXT,
+            purchase_limit INTEGER 
           )
         ''');
       },

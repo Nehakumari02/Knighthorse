@@ -28,9 +28,9 @@ class RegistrationController extends GetxController {
   // ⚠️ SECURITY WARNING: Storing keys on the client side is not recommended for production apps.
   // Ideally, call a backend server to handle Twilio requests.
   late TwilioFlutter twilioFlutter;
-  final String accountSid = 'ACc9fc4109ddb2fb6fed3526f368de9659';
-  final String authToken = '74ad5b4ea266f02c9913475ef697c6e1';
-  final String twilioNumber = '+17752589987'; // Your purchased Twilio phone number
+  final String accountSid = 'ACeba3ee7a19c3e8588dd1da488b801c97';
+  final String authToken = '31a8c4925c0a0b0701477e242fa4f441';
+  final String twilioNumber = '+18127831862'; // Your purchased Twilio phone number
 
   // State Variables
   var isOtpLoading = false.obs;
@@ -38,6 +38,33 @@ class RegistrationController extends GetxController {
   RxBool isOtpVerified = false.obs;
   var timerCount = 0.obs;
   Timer? _timer;
+  // Comprehensive list of common country codes
+  final countryList = [
+    "+93", "+355", "+213", "+376", "+244", "+1", "+54", "+374", "+61", "+43",
+    "+994", "+973", "+880", "+375", "+32", "+501", "+229", "+975", "+591", "+387",
+    "+267", "+55", "+673", "+359", "+226", "+257", "+855", "+237", "+1", "+238",
+    "+236", "+235", "+56", "+86", "+57", "+269", "+242", "+243", "+682", "+506",
+    "+385", "+53", "+357", "+420", "+45", "+253", "+1", "+1", "+593", "+20",
+    "+503", "+240", "+291", "+372", "+251", "+500", "+298", "+679", "+358", "+33",
+    "+594", "+689", "+241", "+220", "+995", "+49", "+233", "+350", "+30", "+299",
+    "+1", "+590", "+1", "+502", "+224", "+245", "+592", "+509", "+504", "+852",
+    "+36", "+354", "+91", "+62", "+98", "+964", "+353", "+44", "+972", "+39",
+    "+225", "+1", "+81", "+962", "+7", "+254", "+686", "+850", "+82", "+965",
+    "+996", "+856", "+371", "+961", "+266", "+231", "+218", "+423", "+370", "+352",
+    "+853", "+389", "+261", "+265", "+60", "+960", "+223", "+356", "+692", "+596",
+    "+222", "+230", "+262", "+52", "+691", "+373", "+377", "+976", "+382", "+1",
+    "+212", "+258", "+95", "+264", "+674", "+977", "+31", "+599", "+687", "+64",
+    "+505", "+227", "+234", "+683", "+672", "+47", "+968", "+92", "+680", "+970",
+    "+507", "+675", "+595", "+51", "+63", "+48", "+351", "+1", "+974", "+262",
+    "+40", "+7", "+250", "+290", "+1", "+1", "+1", "+508", "+1", "+685", "+378",
+    "+239", "+966", "+221", "+381", "+248", "+232", "+65", "+421", "+386", "+677",
+    "+252", "+27", "+34", "+94", "+249", "+597", "+268", "+46", "+41", "+963",
+    "+886", "+992", "+255", "+66", "+670", "+228", "+690", "+676", "+1", "+216",
+    "+90", "+993", "+1", "+688", "+256", "+380", "+971", "+44", "+1", "+598",
+    "+998", "+678", "+379", "+58", "+84", "+1", "+681", "+967", "+260", "+263"
+  ].obs;
+
+  final selectedCountryCode = "+91".obs;
 
   // Store the generated OTP locally to verify later
   String? _generatedOtp;
@@ -66,13 +93,13 @@ class RegistrationController extends GetxController {
       twilioNumber: twilioNumber,
     );
 
-    emailAddressController.addListener(_updateFormValidity);
-    passwordController.addListener(_updateFormValidity);
-    firstNameController.addListener(_updateFormValidity);
-    lastNameController.addListener(_updateFormValidity);
-    gstNoController.addListener(_updateFormValidity);
-    countryController.addListener(_updateFormValidity);
-    mobileNumberController.addListener(_updateFormValidity);
+    emailAddressController.addListener(updateFormValidity);
+    passwordController.addListener(updateFormValidity);
+    firstNameController.addListener(updateFormValidity);
+    lastNameController.addListener(updateFormValidity);
+    gstNoController.addListener(updateFormValidity);
+    countryController.addListener(updateFormValidity);
+    mobileNumberController.addListener(updateFormValidity);
 
     BasicServices.getBasicSettingsInfo();
 
@@ -82,7 +109,7 @@ class RegistrationController extends GetxController {
         isOtpSent.value = false;     // Hide OTP field
         debugPrint("Number changed, verification reset.");
       }
-      _updateFormValidity();
+      updateFormValidity();
     });
     super.onInit();
   }
@@ -172,12 +199,12 @@ class RegistrationController extends GetxController {
     }
   }
 
-  void _updateFormValidity() {
+  void updateFormValidity() {
     isFormValid.value = emailAddressController.text.isNotEmpty &&
         passwordController.text.isNotEmpty &&
         firstNameController.text.isNotEmpty &&
         lastNameController.text.isNotEmpty &&
-        countryController.text.isNotEmpty &&
+        selectedCountryCode.value.isNotEmpty &&
         mobileNumberController.text.isNotEmpty;
   }
 
@@ -195,14 +222,14 @@ class RegistrationController extends GetxController {
 
   // 👇 EMAIL SENDING FUNCTION
   Future<void> sendAdminAlertEmail() async {
-    String username = 'marketing.knighthorse@gmail.com';
-    String password = 'xyof cnmn lglf sobs'; // Your App Password
+    String username = 'Application.knighthorse@gmail.com';
+    String password = 'mjxp hzcp ivud rxsn'; // Your App Password
 
     final smtpServer = gmail(username, password);
 
     final message = Message()
       ..from = Address(username, 'Knight Horse App')
-      ..recipients.add('marketing.knighthorse@gmail.com')
+      ..recipients.add('Application.knighthorse@gmail.com')
       ..subject = 'New User Registration: ${firstNameController.text}'
       ..text = '''
         A new user has just registered!
@@ -227,16 +254,16 @@ class RegistrationController extends GetxController {
   bool get isLoading => _isLoading.value;
 
   registrationProcess() async {
-    if (!isOtpVerified.value) {
-      Get.snackbar(
-          "Verification Required",
-          "Please verify your mobile number with OTP before registering.",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
-          snackPosition: SnackPosition.BOTTOM
-      );
-      return;
-    }
+    // if (!isOtpVerified.value) {
+    //   Get.snackbar(
+    //       "Verification Required",
+    //       "Please verify your mobile number with OTP before registering.",
+    //       backgroundColor: Colors.red,
+    //       colorText: Colors.white,
+    //       snackPosition: SnackPosition.BOTTOM
+    //   );
+    //   return;
+    // }
 
     return AuthServices.registrationProcess(
       firstName: firstNameController.text,
@@ -246,7 +273,7 @@ class RegistrationController extends GetxController {
       userType: userType.value,
       verificationStatus: verificationStatus.value.toLowerCase(),
       gstNo: gstNoController.text,
-      mobile_code: countryController.text,
+      mobile_code: selectedCountryCode.value, // This uses the dropdown value
       mobile: mobileNumberController.text,
       dialCode: LocalStorage.email,
       isLoading: _isLoading,

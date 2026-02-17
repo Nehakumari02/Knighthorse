@@ -1,5 +1,6 @@
 part of '../screen/order_details_screen.dart';
 
+
 class ShipmentInfo extends GetView<OrderDetailsController> {
   const ShipmentInfo({Key? key}) : super(key: key);
 
@@ -20,46 +21,42 @@ class ShipmentInfo extends GetView<OrderDetailsController> {
           crossAxisAlignment: crossStart,
           children: [
             TextWidget(
-              Strings.shipmentDetails,
+              "Shipment Details",
               fontSize: Dimensions.titleMedium * 1.25,
               fontWeight: FontWeight.w500,
             ),
             DividerWidget(),
+
+            // 1. Tracking Number Row (Existing)
             DoubleSideTextWidget(
               leftWidget: _leftInfoWidget(
-                Strings.trackingNumber,
+                "Tracking Number",
                 controller.trackingNumber.value,
               ),
-              // rightWidget: _rightInfoWidget(
-              //   Strings.deliveryDate,
-              //   controller.deliveryDate.value,
-              // ),
-
               rightWidget: _rightInfoWidget(
                 "",
                 '',
               ),
             ),
             DividerWidget(),
-            // DoubleSideTextWidget(
-            //   leftWidget: _leftInfoWidget(
-            //     Strings.deliveryTime,
-            //     controller.deliveryTime.value,
-            //   ),
-            //   rightWidget: _rightInfoWidget(
-            //     Strings.shippingMethod,
-            //     controller.shippingMethod.value,
-            //   ),
-            // ),
-            // DividerWidget(),
-            DoubleSideTextWidget(
-              leftWidget: _leftInfoWidget(
-                Strings.deliveryCharge,
-                "${controller.deliveryCharge.value}${controller.currencySymbol.value}",
-              ),
-              rightWidget: _rightInfoWidget(
-                "",
-                '',
+
+            // 2. Courier Company Widget (New)
+            _leftInfoWidget(
+              "Courier Company",
+              controller.courierCompany.value.isEmpty ? "N/A" : controller.courierCompany.value,
+            ),
+            DividerWidget(),
+
+            // 3. Tracking Link Widget (New & Clickable)
+            GestureDetector(
+              onTap: () => controller.launchTrackingUrl(),
+              child: _leftInfoWidget(
+                "Tracking Link",
+                controller.trackingLink.value.isEmpty ? "Not Available" : controller.trackingLink.value,
+                valueTextStyle: TextStyle(
+                  color: CustomColor.primary,
+                  decoration: TextDecoration.underline,
+                ),
               ),
             ),
           ],

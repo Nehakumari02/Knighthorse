@@ -18,6 +18,7 @@ import '../controller/dashboard_controller.dart';
 import '../model/popular_product_model.dart';
 import '../widget/category_section.dart';
 import '../widget/featured_categories_section.dart'; // 👈 ADD THIS LINE
+import '../../all_product_list/screen/all_product_list_screen.dart';
 
 
 import '../widget/top_bar_widget.dart';

@@ -30,6 +30,8 @@ import 'package:intl/intl.dart';
 class CartController extends GetxController {
   final CartDatabaseHelper _dbHelper = CartDatabaseHelper();
   var userType = "retailer".obs;
+  var assignedSubAdmin = "".obs;
+  var subAdminEmail = "".obs;
 
   @override
   void onInit() {
@@ -55,6 +57,10 @@ class CartController extends GetxController {
         if (response != null) {
           userType.value = response.data.userInfo.user_type ?? "retailer";
           debugPrint("✅ Cart User Type: ${userType.value}");
+          assignedSubAdmin.value = response.data.userInfo.assign_to ?? "";
+          debugPrint("✅ Assigned Sub-Admin: ${assignedSubAdmin.value}");
+          subAdminEmail.value = response.data.userInfo.assign_to_email ?? "";
+          debugPrint("📧 Sub-Admin Email: ${subAdminEmail.value}"); // 👈 ADD THIS LINE
         }
       },
     );
@@ -62,100 +68,112 @@ class CartController extends GetxController {
 
   RxList<CartDatum> cartItems = <CartDatum>[].obs;
 
+  // Future<void> loadCartFromDB() async {
+  //   cartItems.clear();
+  //   final items = await _dbHelper.getAllCartItems();
+  //   cartItems.assignAll(items);
+  //   _setCalculation();
+  // }
+
   Future<void> loadCartFromDB() async {
     cartItems.clear();
+
     final items = await _dbHelper.getAllCartItems();
+
+    debugPrint("🟢 CART FROM DB → Total items: ${items.length}");
+
+    for (int i = 0; i < items.length; i++) {
+      debugPrint("🟢 DB ITEM [$i]: ${items[i]}");
+    }
+
     cartItems.assignAll(items);
     _setCalculation();
   }
 
-  // 1. Add these imports at the top of the file if not present:
-// import 'package:mailer/mailer.dart';
-// import 'package:mailer/smtp_server.dart';
+
+
 
   Future<void> _sendOrderEmailToAdmin() async {
     // 1. Credentials
-    String username = 'marketing.knighthorse@gmail.com';
-    String password = 'xyof cnmn lglf sobs';
-
+    String username = 'Application.knighthorse@gmail.com';
+    String password = 'mjxp hzcp ivud rxsn';
     final smtpServer = gmail(username, password);
 
-    // 2. Start building the email body
+    // 2. RECIPIENT LOGIC
+    String recipientEmail;
+    if (assignedSubAdmin.value.trim().isEmpty ||
+        assignedSubAdmin.value.toLowerCase() == "superadmin" ||
+        subAdminEmail.value.trim().isEmpty) {
+      recipientEmail = 'Application.knighthorse@gmail.com';
+    } else {
+      recipientEmail = subAdminEmail.value.trim();
+    }
+
+    // 3. FETCH CUSTOMER DETAILS (Using ProfileController)
+    final profile = Get.find<ProfileController>();
+
+    // 4. BUILD EMAIL BODY
     StringBuffer body = StringBuffer();
-
-    // --- HEADER ---
-
     body.writeln("          NEW ORDER RECEIVED            ");
-    body.writeln("");
-
-    // --- CUSTOMER INFO ---
-    body.writeln("BILLING DETAILS");
     body.writeln("----------------------------------------");
-    body.writeln("Phone   : ${phoneController.text}");
-    body.writeln("Email   : ${emailController.text}");
-    body.writeln("Address : ${addressController.text}");
-    body.writeln("Note    : ${orderNoteController.text}");
-    body.writeln("Payment : ${paymentMethod.value.toUpperCase()}");
-    body.writeln("");
 
-    // --- ITEM LIST ---
-    body.writeln("ORDER SUMMARY");
+    // Display Order ID from the checkout response message
+    // Usually, the message contains "Order placed successfully. ID: #12345"
+    body.writeln("Order Status: ${_checkOutModel.message.success.first}");
     body.writeln("----------------------------------------");
+    body.writeln("CUSTOMER DETAILS:");
+    body.writeln("Name     : ${profile.userName.value}");
+    body.writeln("Email    : ${emailController.text}");
+    body.writeln("Phone    : ${phoneController.text}");
+    body.writeln("Address  : ${addressController.text}");
+    body.writeln("----------------------------------------");
+    body.writeln("ORDER ITEMS:");
 
     for (var item in cartItems) {
-      double price = double.tryParse(item.price.toString()) ?? 0.0;
-      int qty = item.quantity.value;
-      double rowTotal = price * qty;
-
-      // Clean Receipt Format
-      body.writeln("${item.name}");
-      body.writeln("Qty: $qty  x  ${item.price}");
-      body.writeln("Item Total: $rowTotal");
-      body.writeln("----------------------------------------");
-    }
-
-    // --- TOTALS ---
-    body.writeln("");
-    body.writeln("PAYMENT BREAKDOWN");
-    body.writeln("----------------------------------------");
-    body.writeln("Subtotal       : ${subtotal.value}");
-    body.writeln("Delivery Fee   : ${deliveryCharge.value}");
-
-    if (isChecked.value) {
-      body.writeln("Reusable Bag   : ${reusableBagPrice.value}");
+      body.writeln("- ${item.name} x ${item.quantity.value}");
     }
 
     body.writeln("----------------------------------------");
-    body.writeln("GRAND TOTAL    : ${totalCost.value}");
-    body.writeln("****************************************");
+    body.writeln("Assigned To: ${assignedSubAdmin.value.isEmpty ? 'Superadmin' : assignedSubAdmin.value}");
 
-    // 3. Create the Message
+    // 5. Create the Message
     final message = mail.Message()
       ..from = mail.Address(username, 'Knighthorse App')
-      ..recipients.add('nehapanwal02@gmail.com')
-      ..subject = 'New Order: ${totalCost.value} (${phoneController.text})'
+      ..recipients.add(recipientEmail)
+    // Subject line now uses Phone and Status instead of Grand Total
+      ..subject = 'New Order - ${profile.userName.value}'
       ..text = body.toString();
 
-    // 4. Send
+    // 6. Send
     try {
-      final sendReport = await mail.send(message, smtpServer);
-      print('✅ Clean Receipt Email Sent');
+      await mail.send(message, smtpServer);
+      debugPrint('✅ Email Sent Successfully to: $recipientEmail');
     } catch (e) {
-      print('🔴 Failed to send admin email: $e');
+      debugPrint('🔴 Failed to send email: $e');
     }
   }
 
   Future<void> addToCart(CartDatum item) async {
     final index = cartItems.indexWhere((e) => e.id == item.id);
+    // Check limit for existing item
+
 
     if (index != -1) {
+      int pLimit = cartItems[index].purchaseLimit ?? 1000;
+      debugPrint("🔍 CHECKING LIMIT: [${cartItems[index].name}] -> Limit: $pLimit | Current Qty: ${cartItems[index].quantity.value}");      if (pLimit == 0) pLimit = 1000;
       // 1. If item already exists, increase by 1 (10 -> 11 -> 12)
-      cartItems[index].quantity.value++;
-      await _dbHelper.updateCartItem(cartItems[index]);
-      _debounceUpdate(cartItems[index]);
+      if (cartItems[index].quantity.value < pLimit) {
+        cartItems[index].quantity.value++;
+        await _dbHelper.updateCartItem(cartItems[index]);
+        _debounceUpdate(cartItems[index]);
+      }
+      else {
+        // ADDED THIS LINE: Show error if they try to exceed 10
+        CustomSnackBar.error("Maximum 1000 items allowed per product");
+      }
     } else {
       // 2. If item is NEW, start directly at 10
-      item.quantity.value = 1;
+      // item.quantity.value = 1;
 
       await _dbHelper.insertCartItem(item);
       cartItems.add(item);
@@ -250,6 +268,10 @@ class CartController extends GetxController {
       final mergedCart = <CartDatum>[];
 
       for (var apiItem in apiCart) {
+        debugPrint(
+            "🌐 API ITEM → ${apiItem.name} | purchaseLimit: ${apiItem.purchaseLimit}"
+        );
+
         final match =
             localCart.firstWhereOrNull((local) => local.id == apiItem.id);
 
@@ -266,6 +288,8 @@ class CartController extends GetxController {
               image: apiItem.image,
               quantity: combinedQuantity,
               availableQuantity: apiItem.availableQuantity,
+              purchaseLimit: apiItem.purchaseLimit, // 👈 ADD THIS LINE
+
             ),
           );
         } else {
@@ -284,7 +308,9 @@ class CartController extends GetxController {
       // }
 
       for (var item in mergedCart) {
+
         cartItems.add(item);
+        debugPrint("📦 Product: ${item.name} | Purchase Limit: ${item.purchaseLimit}");
         _listenToQuantity(item);
       }
     }
@@ -381,6 +407,8 @@ void deliverySet() {
 
     for (int i = 0; i < cartItems.length; i++) {
       final item = cartItems[i];
+      // Inside the for loop in updateCartProcess
+      debugPrint("📤 SENDING CART UPDATE BODY22: ${cartItems[i].purchaseLimit}");
 
       inputBody['cart[$i][id]'] = item.id;
       inputBody['cart[$i][name]'] = item.name;
@@ -389,6 +417,7 @@ void deliverySet() {
       inputBody['cart[$i][offer_price]'] = item.offerPrice;
       inputBody['cart[$i][image]'] = item.image;
       inputBody['cart[$i][quantity]'] = item.quantity.toString();
+      inputBody['cart[$i][purchase_limit]'] = item.purchaseLimit;
       inputBody['cart[$i][available_quantity]'] =
           item.availableQuantity.toString();
       inputBody['cart[$i][shipment_type]'] = item.shipmentType.toString();
@@ -398,6 +427,7 @@ void deliverySet() {
           : 0;
     }
     inputBody['sub_total'] = itemSubTotal.toStringAsFixed(2);
+    debugPrint("📤 SENDING CART UPDATE BODY: $inputBody");
     return RequestProcess().request(
         fromJson: CommonSuccessModel.fromJson,
         apiEndpoint: ApiEndpoint.cartUpdate,
@@ -460,18 +490,18 @@ void deliverySet() {
       final item = cartItems[index];
       final currentQty = item.quantity.value;
       final availableQty = int.parse(item.availableQuantity!);
-      int limit = int.tryParse(item.purchase_limit ?? "0") ?? 0;
-      debugPrint("🚀 Checkout Body: $limit"); // Print to verify
-      // 2. Check Purchase Limit Constraint first
-      if (limit > 0 && currentQty >= limit) {
-        CustomSnackBar.error("Maximum purchase limit for this product is $limit");
-        return; // Stop the function here
-      }
-      if (currentQty < availableQty) {
-        item.quantity.value++;
-        _debounceUpdate(item);
-      } else {
-        CustomSnackBar.error(Strings.cannotAddMore);
+
+      int pLimit = item.purchaseLimit ?? 1000;      if (pLimit == 0) pLimit = 1000;
+      debugPrint("🔍 CHECKING LIMIT increase function: [${cartItems[index].name}] -> Limit: $pLimit | Current Qty: ${cartItems[index].quantity.value}");
+      if (currentQty < pLimit) {
+        if (currentQty < availableQty) {
+          item.quantity.value++;
+          _debounceUpdate(item);
+        } else {
+          CustomSnackBar.error(Strings.cannotAddMore);
+        }
+      }else{
+        CustomSnackBar.error("You cannot add more than $pLimit units of this item");
       }
     }
   }

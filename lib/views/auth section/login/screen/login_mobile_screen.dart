@@ -26,7 +26,7 @@ class LoginMobileScreen extends GetView<LoginController> {
           HeadingWidget(),
           InputField(),
           ButtonWidget(),
-          OtherLoginOption(),
+          // OtherLoginOption(),
           DoNotHaveAccount(),
         ],
       ),

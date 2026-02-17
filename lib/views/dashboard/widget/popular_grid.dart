@@ -41,7 +41,7 @@ class PopularProductGrid extends GetView<DashboardController> {
 
   _popularProductList() {
     return SizedBox(
-        height: 190.h,
+        height: 280.h,
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: controller.popularProductsList.length > 5

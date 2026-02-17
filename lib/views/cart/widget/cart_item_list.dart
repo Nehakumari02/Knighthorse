@@ -48,7 +48,7 @@ class CartItemList extends GetView<CartController> {
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
-          horizontal: Dimensions.horizontalSize * 0.6,
+          horizontal: Dimensions.horizontalSize * 0.2,
           vertical: Dimensions.verticalSize * 0.5,
         ),
         child: Row(
@@ -102,7 +102,7 @@ class CartItemList extends GetView<CartController> {
                                 )
                               : FittedBox(
                                   child: TextWidget(
-                                  "${controller.currencySymbol}${(double.parse(price.value) * quantity).toStringAsFixed(2)}",
+                                  "${controller.currencySymbol}${(double.parse(price.value)).toStringAsFixed(2)}",
                                   color: CustomColor.primary,
                                   fontWeight: FontWeight.w700,
                                 )),

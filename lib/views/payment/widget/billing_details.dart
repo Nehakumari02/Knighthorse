@@ -26,14 +26,26 @@ class BillingDetails extends GetView<CartController> {
                 fontWeight: FontWeight.w500,
               ),
               Sizes.height.v10,
-              DoubleSideTextWidget(
-                keys: Strings.subtotal,
-                value: controller.total.value.toStringAsFixed(2),
-              ),
+              // DoubleSideTextWidget(
+              //   keys: Strings.subtotal,
+              //   value: controller.total.value.toStringAsFixed(2),
+              // ),
               // DoubleSideTextWidget(
               //   keys: Strings.deliveryCharge,
               //   value: controller.deliveryCharge.value.toStringAsFixed(2),
               // ),
+              DoubleSideTextWidget(
+                keys: "Total Items",
+                value: "${controller.cartItems.length}",
+              ),
+              // --- QUANTITY FIELD ---
+              Sizes.height.v10,
+              DoubleSideTextWidget(
+                keys: "Total Quantity",
+                // This sums up the .value of every RxInt quantity in your cart
+                value: "${controller.cartItems.fold(0, (sum, item) => sum + item.quantity.value)} ",
+              ),
+
               _checkBoxWidget(context),
               // --- Hiding Wallet Balance ---
               Visibility(
@@ -45,9 +57,9 @@ class BillingDetails extends GetView<CartController> {
               ),
               // -----------------------------
               DividerWidget(),
-              DoubleSideTextWidget(
-                  keys: Strings.totalCost,
-                  value: controller.totalCost.value.toStringAsFixed(2))
+              // DoubleSideTextWidget(
+              //     keys: Strings.totalCost,
+              //     value: controller.totalCost.value.toStringAsFixed(2))
             ],
           ),
         ),

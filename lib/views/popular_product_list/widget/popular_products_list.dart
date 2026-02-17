@@ -21,7 +21,7 @@ class PopularProductsList extends GetView<DashboardController> {
               controller: controller.scrollController,
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.75,
+                childAspectRatio: 0.50,
                 crossAxisSpacing: Dimensions.paddingSize * 0.3,
                 mainAxisSpacing: Dimensions.paddingSize * 0.4,
               ),

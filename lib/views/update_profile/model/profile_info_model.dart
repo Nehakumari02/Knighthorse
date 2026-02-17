@@ -68,6 +68,8 @@ class UserInfo {
     dynamic image;
     String address;
     String user_type;
+    String? assign_to; // 1. Use String? because it can be null
+    String? assign_to_email; // 👈 Add this
 
     UserInfo({
         required this.id,
@@ -80,6 +82,8 @@ class UserInfo {
         required this.image,
         required this.address,
         required this.user_type,
+        this.assign_to,
+        this.assign_to_email, // 👈 Add this
     });
 
     factory UserInfo.fromJson(Map<String, dynamic> json) => UserInfo(
@@ -93,6 +97,8 @@ class UserInfo {
         image: json["image"] ?? "",
         address: json["address"],
         user_type: json["user_type"],
+        assign_to: json["assign_to"],
+        assign_to_email: json["assign_to_email"]?.toString() ?? "", // 👈 Map it here
     );
 
 }

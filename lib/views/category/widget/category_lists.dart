@@ -19,7 +19,10 @@ class CategoryLists extends GetView<CategoryController> {
   }
 
   Widget _categoryItemCard(String image, String label, int index) {
-    return Obx(() {
+    return Container(
+        height: Dimensions.heightSize * 8.5,
+        width: Dimensions.heightSize * 9.5,
+    child: Obx(() {
       var isSelected =
           controller.selelctedCategory.value == controller.categories[index];
       return GestureDetector(
@@ -29,40 +32,51 @@ class CategoryLists extends GetView<CategoryController> {
         },
         child: Card(
           elevation: isSelected ? 2 : 0,
+          shape: RoundedRectangleBorder(
+            // --- CHANGE: Card shape to square/rounded rectangle ---
+            borderRadius: BorderRadius.circular(Dimensions.radius * 0.5),
+            side: isSelected
+                ? BorderSide(color: CustomColor.primary, width: 1.5)
+                : BorderSide.none,
+          ),
           child: Padding(
             padding: EdgeInsets.symmetric(
-                horizontal: Dimensions.horizontalSize * .4,
-                vertical: Dimensions.verticalSize * .4),
+                horizontal: Dimensions.horizontalSize * .02,
+                vertical: Dimensions.verticalSize * .15),
             child: Column(
               mainAxisAlignment: mainCenter,
               mainAxisSize: mainMin,
               children: [
+                // --- CHANGE: Container now has fixed square dimensions and borderRadius ---
                 Container(
-                  padding: EdgeInsets.all(Dimensions.radius * 1.2),
+                  height: Dimensions.heightSize * 5.7,
+                  width: Dimensions.heightSize * 5.7,
+                  padding: EdgeInsets.all(Dimensions.radius * 0),
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: CustomColor.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(Dimensions.radius * 0.4),
+                    color: CustomColor.primary.withOpacity(0.1),
                   ),
-                  child: Center(
-                      child: CircleAvatar(
-                    radius: Dimensions.radius * 1.1,
-                    backgroundColor: CustomColor.primary.withOpacity(0.1),
-                    child:
-                        Image.network("${controller.imagePath.value}${image}"),
-                  )),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(Dimensions.radius * 0.4),
+                    child: Image.network(
+                      "${controller.imagePath.value}$image",
+                      fit: BoxFit.contain, // Ensures the whole icon fits in the square
+                      errorBuilder: (context, error, stackTrace) =>
+                          Icon(Icons.category, color: CustomColor.primary),
+                    ),
+                  ),
                 ),
                 Sizes.height.v5,
-                Flexible(
-                  child: TextWidget(
-                    label,
-                    typographyStyle: TypographyStyle.labelMedium,
-                    lineHeight: 1,
-                    maxLines: 2,
-                    fontWeight: FontWeight.w400,
-                    textAlign: TextAlign.center,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Dimensions.widthSize,
-                    ),
+
+                // --- CHANGE: Decreased font size and removed maxLines/overflow ---
+                TextWidget(
+                  label,
+                  fontSize: Dimensions.labelSmall * 0.8, // Decreased font size
+                  lineHeight: 1.1,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
+                  textAlign: TextAlign.center,
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Dimensions.widthSize * 0.2,
                   ),
                 ),
               ],
@@ -70,6 +84,6 @@ class CategoryLists extends GetView<CategoryController> {
           ),
         ),
       );
-    });
-  }
-}
+    })
+    );
+  }}

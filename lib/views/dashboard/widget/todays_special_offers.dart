@@ -10,6 +10,7 @@ class TodaysSpecialOffers extends GetView<DashboardController> {
         right: Dimensions.horizontalSize * .7,
         left: Dimensions.horizontalSize * .7,
         bottom: Dimensions.verticalSize * .5,
+
       ),
       child: Obx(()=> controller.offerProducts.isEmpty? SizedBox.shrink(): Column(
           crossAxisAlignment: crossStart,
@@ -19,8 +20,8 @@ class TodaysSpecialOffers extends GetView<DashboardController> {
               fontSize: Dimensions.titleMedium,
               fontWeight: FontWeight.w600,
             ),
-            Sizes.height.v10,
-            _spendInfo(),
+            // Sizes.height.v10,
+            // _spendInfo(),
             Sizes.height.v10,
             _offerProductCaousel(context),
             Sizes.height.v5,
@@ -45,7 +46,7 @@ class TodaysSpecialOffers extends GetView<DashboardController> {
           );
         },
         options: CarouselOptions(
-          height: Dimensions.buttonHeight * 3.5,
+          height: Dimensions.buttonHeight * 5.0,
           autoPlay: true,
           enlargeCenterPage: false,
           viewportFraction: 0.5,
